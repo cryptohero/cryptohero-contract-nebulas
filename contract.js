@@ -258,8 +258,7 @@ class LinkIdolContract extends LinkIdolToken {
         return Blockchain.transaction.from === this.owner
     }
 
-    changePrice() {
-        const { value } = Blockchain.transaction
+    changePrice(value) {
         if (this.isContractOwner()) {
             this.cardPrice = value
         } else {
@@ -281,7 +280,9 @@ class LinkIdolContract extends LinkIdolToken {
         var { from, value } = Blockchain.transaction
         if (`${this.cardPrice}` === `${value}`) {
             var tokenId = this._issue(from, randomGirlId)
-            Blockchain.transfer(referer, new BigNumber(value).dividedToIntegerBy(10))
+            if (referer !== "") {
+                Blockchain.transfer(referer, new BigNumber(value).dividedToIntegerBy(20))
+            }
             return tokenId
         } else {
             throw new Error("Price is not matching, please check your transaction details.")

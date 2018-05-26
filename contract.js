@@ -1,8 +1,8 @@
 /**
  * LinkIdol Contract, copyright is owned by Andoromeda Foundation
  * @author: Frank Wei <frank@frankwei.xyz>
- * Last updated: 12:45AM, May 26th
- * Test Net Contract Address: n1vNC95wk8wDW85jD1gPXjChpqFGdXmA4Yk 
+ * Last updated: 4:45 PM, May 26th
+ * Test Net Contract Address: n1weWeq9Gx2V7wjJGp93ZhSkxbMsoBFE3RP 
  */
 "use strict"
 
@@ -100,6 +100,7 @@ class StandardNRC721Token {
     getApproved(_tokenId) {
         return this.tokenApprovals.get(_tokenId)
     }
+
 
     setApprovalForAll(_to, _approved) {
         var from = Blockchain.transaction.from
@@ -212,27 +213,39 @@ class LinkIdolToken extends StandardNRC721Token {
         super()
         LocalContractStorage.defineProperties(this, {
             _length: null,
-            girlsList: null
+            girlsList: null,
+            // Changed `totalQty` before deploy!!!            
+            totalQty: null
         })
     }
 
     init(name, symbol, initialGirlsList) {
         super.init(name, symbol)
         this._length = 0
+        this.totalQty = 5
         this.girlsList = initialGirlsList
     }
 
 
     _issue(_to, _girlId) {
         var tokenId = this._length
-        if (tokenId > this.maximumIssue) {
+        if (this.isSoldOut()) {
             throw new Error("Sorry, the card pool is empty now.")
         } else {
             this._mint(_to, tokenId)
             this.tokenToChara.set(tokenId, _girlId)
-            this._length += 1
-            return this._length
+            this.totalQty -= 1;
+            this._length += 1;
+            return tokenId
         }
+    }
+
+    isSoldOut() {
+        return this.totalQty <= 0
+    }
+
+    getCardsLeft() {
+        return this.totalQty;
     }
 
     getCardIdByTokenId(_tokenId) {
@@ -257,6 +270,10 @@ class LinkIdolToken extends StandardNRC721Token {
         }
         return result
     }
+
+    getTotalSupply() {
+        return this._length
+    }
 }
 
 class LinkIdolContract extends LinkIdolToken {
@@ -265,8 +282,6 @@ class LinkIdolContract extends LinkIdolToken {
         LocalContractStorage.defineProperties(this, {
             cardPrice: null,
             owner: null,
-            // Changed `maximumIssue` before deploy!!!
-            maximumIssue: 100
         })
     }
 
@@ -280,6 +295,10 @@ class LinkIdolContract extends LinkIdolToken {
     isContractOwner() {
         var from = Blockchain.transaction.from
         return this.owner === from
+    }
+
+    getPrice() {
+        return this.cardPrice
     }
 
     changePrice(value) {

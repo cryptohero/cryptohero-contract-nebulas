@@ -222,6 +222,20 @@ class StandardNRC721Token {
 }
 
 class LinkIdolToken extends StandardNRC721Token {
+    constructor() {
+        super()
+        LocalContractStorage.defineProperties(this, {
+            cardPrice: null,
+            owner: null,
+            girlsList: null,
+        })
+    }
+
+    init(name, symbol, initialGirlsList) {
+        super.init(name, symbol)
+        this.girlsList = initialGirlsList
+    }
+
     isContractOwner() {
         var from = Blockchain.transaction.from
         return this.owner === from
@@ -229,11 +243,29 @@ class LinkIdolToken extends StandardNRC721Token {
 
     _issue(_to, _girlId) {
         var tokenId = this._length
-        this._mint(_to, tokenId)
-        this.tokenToChara.set(tokenId, _girlId)
-        this._length += 1
-        return this._length
+        if (tokenId > this.maximumIssue) {
+            throw new Error("Sorry, the card pool is empty now.")
+        } else {
+            this._mint(_to, tokenId)
+            this.tokenToChara.set(tokenId, _girlId)
+            this._length += 1
+            return this._length
+        }
     }
+
+    getCardIdByTokenId(_tokenId) {
+        return this.tokenToChara.get(_tokenId)
+    }
+
+    getCardNameByTokenId(_tokenId) {
+        const cardId = this.getCardIdByTokenId(_tokenId)
+        return this.girlsList[cardId]
+    }
+
+    getGirlsList() {
+        return this.girlsList
+    }
+
 }
 
 class LinkIdolContract extends LinkIdolToken {
@@ -242,20 +274,16 @@ class LinkIdolContract extends LinkIdolToken {
         LocalContractStorage.defineProperties(this, {
             cardPrice: null,
             owner: null,
-            girlsList: null
+            girlsList: null,
+            maximumIssue: 10000
         })
     }
 
     init(name, symbol, initialGirlsList) {
         const { from, value } = Blockchain.transaction
-        super.init(name, symbol)
+        super.init(name, symbol, initialGirlsList)
         this.cardPrice = value
         this.owner = from
-        this.girlsList = initialGirlsList
-    }
-
-    isContractOwner() {
-        return Blockchain.transaction.from === this.owner
     }
 
     changePrice(value) {
@@ -288,6 +316,7 @@ class LinkIdolContract extends LinkIdolToken {
             throw new Error("Price is not matching, please check your transaction details.")
         }
     }
+
 }
 
 module.exports = LinkIdolContract

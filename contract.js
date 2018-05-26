@@ -1,20 +1,9 @@
-// Copyright (C) 2017 go-nebulas authors
-//
-// This file is part of the go-nebulas library.
-//
-// the go-nebulas library is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// the go-nebulas library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with the go-nebulas library.  If not, see <http://www.gnu.org/licenses/>.
-//
+/**
+ * LinkIdol Contract, copyright is owned by Andoromeda Foundation
+ * @author: Frank Wei <frank@frankwei.xyz>
+ * Last updated: 12:45AM, May 26th
+ * Test Net Contract Address: n1vNC95wk8wDW85jD1gPXjChpqFGdXmA4Yk 
+ */
 "use strict"
 
 class Operator {
@@ -48,10 +37,7 @@ class Operator {
 class StandardNRC721Token {
     constructor() {
         // Contract Need to store on-chain data in LocalContractStorage
-        LocalContractStorage.defineProperties(this, {
-            _name: null,
-            _length: null
-        })
+        LocalContractStorage.defineProperties(this, { _name: null, })
         LocalContractStorage.defineMapProperties(this, {
             "tokenOwner": null,
             "ownedTokensCount": {
@@ -77,7 +63,6 @@ class StandardNRC721Token {
 
     init(name) {
         this._name = name
-        this._length = 0
     }
 
     name() {
@@ -148,6 +133,7 @@ class StandardNRC721Token {
             throw new Error("permission denied in transferFrom.")
         }
     }
+
     transferFrom(_from, _to, _tokenId) {
         var from = Blockchain.transaction.from
         if (this.isApprovedOrOwner(from, _tokenId)) {
@@ -225,21 +211,17 @@ class LinkIdolToken extends StandardNRC721Token {
     constructor() {
         super()
         LocalContractStorage.defineProperties(this, {
-            cardPrice: null,
-            owner: null,
-            girlsList: null,
+            _length: null,
+            girlsList: null
         })
     }
 
     init(name, symbol, initialGirlsList) {
         super.init(name, symbol)
+        this._length = 0
         this.girlsList = initialGirlsList
     }
 
-    isContractOwner() {
-        var from = Blockchain.transaction.from
-        return this.owner === from
-    }
 
     _issue(_to, _girlId) {
         var tokenId = this._length
@@ -266,6 +248,15 @@ class LinkIdolToken extends StandardNRC721Token {
         return this.girlsList
     }
 
+    getTokenIDsByAddress(_address) {
+        var result = []
+        for (let id = 0; id < this._length; id += 1) {
+            if (this.ownerOf(id) === _address) {
+                result.push(id)
+            }
+        }
+        return result
+    }
 }
 
 class LinkIdolContract extends LinkIdolToken {
@@ -274,16 +265,21 @@ class LinkIdolContract extends LinkIdolToken {
         LocalContractStorage.defineProperties(this, {
             cardPrice: null,
             owner: null,
-            girlsList: null,
-            maximumIssue: 10000
+            // Changed `maximumIssue` before deploy!!!
+            maximumIssue: 100
         })
     }
 
-    init(name, symbol, initialGirlsList) {
-        const { from, value } = Blockchain.transaction
+    init(name, symbol, initialPrice, initialGirlsList) {
+        const { from } = Blockchain.transaction
         super.init(name, symbol, initialGirlsList)
-        this.cardPrice = value
+        this.cardPrice = initialPrice
         this.owner = from
+    }
+
+    isContractOwner() {
+        var from = Blockchain.transaction.from
+        return this.owner === from
     }
 
     changePrice(value) {
@@ -316,12 +312,6 @@ class LinkIdolContract extends LinkIdolToken {
             throw new Error("Price is not matching, please check your transaction details.")
         }
     }
-
 }
 
 module.exports = LinkIdolContract
-
-/**
- * Last updated: 12:45AM, May 26th
- * Test Net Contract Address: n1vNC95wk8wDW85jD1gPXjChpqFGdXmA4Yk 
- */

@@ -1,8 +1,9 @@
 /**
  * LinkIdol Contract, copyright is owned by Andoromeda Foundation
  * @author: Frank Wei <frank@frankwei.xyz>
- * Last updated: 4:45 PM, May 26th
- * Test Net Contract Address: n1weWeq9Gx2V7wjJGp93ZhSkxbMsoBFE3RP 
+ * Last updated: 5:30 PM, May 26th
+ * Test Net Contract Address: n1yD5bMt5HeWgm4rDfadK7Lz415r5bnrs9c 
+ * @version: 0.9 beta - need to find the potential bug
  */
 "use strict"
 

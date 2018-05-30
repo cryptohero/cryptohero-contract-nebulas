@@ -1,8 +1,8 @@
 /**
  * LinkIdol Contract, copyright is owned by Andoromeda Foundation
  * @author: Frank Wei <frank@frankwei.xyz>
- * Last updated: 5:30 PM, May 26th
- * Test Net Contract Address: n1yD5bMt5HeWgm4rDfadK7Lz415r5bnrs9c 
+ * Last updated: 12:00 AM, May 30th
+ * Test Net Contract Address: n1oecF9SK8wUKxAcTVCYfvsvG3P6TmHWdzW 
  * @version: 0.9 beta - need to find the potential bug
  */
 "use strict"
@@ -218,15 +218,17 @@ class LinkIdolToken extends StandardNRC721Token {
             // Changed `totalQty` before deploy!!!            
             totalQty: null
         })
+
+        LocalContractStorage.defineMapProperties(this, { "admins": null })
     }
+
 
     init(name, symbol, initialGirlsList) {
         super.init(name, symbol)
         this._length = 0
-        this.totalQty = 5
+        this.totalQty = 100
         this.girlsList = initialGirlsList
     }
-
 
     _issue(_to, _girlId) {
         var tokenId = this._length
@@ -283,49 +285,74 @@ class LinkIdolContract extends LinkIdolToken {
         LocalContractStorage.defineProperties(this, {
             cardPrice: null,
             owner: null,
+            referCut: null
         })
     }
 
     init(name, symbol, initialPrice, initialGirlsList) {
         const { from } = Blockchain.transaction
         super.init(name, symbol, initialGirlsList)
+        this.admins.set(from, "true")
         this.cardPrice = initialPrice
         this.owner = from
+        this.referCutPercentage = 5
     }
 
-    isContractOwner() {
-        var from = Blockchain.transaction.from
-        return this.owner === from
+    onlyAdmins() {
+        const { from } = Blockchain.transaction
+        if (!this.admins.get(from)) {
+            throw new Error("Sorry, You don't have the permission as admins.")
+        }
+    }
+
+    setAdmins(address) {
+        this.onlyContractOwner()
+        this.admins.set(address, "true")
+    }
+
+    onlyContractOwner() {
+        const { from } = Blockchain.transaction
+        if (this.owner !== from) {
+            throw new Error("Sorry, But you don't have the permission as owner.")
+        }
     }
 
     getPrice() {
         return this.cardPrice
     }
 
+    // For keeping price to fiat
     changePrice(value) {
-        if (this.isContractOwner()) {
-            this.cardPrice = value
+        this.onlyAdmins()
+        this.cardPrice = value
+    }
+
+    changeReferPercentage(value) {
+        this.onlyAdmins()
+        if (value > 100) {
+            throw new Error("Refer Percentage above 100 is ridiculous, we are not selling for lost")
         } else {
-            throw new Error("You don't have permission to change price.")
+            this.referCutPercentage = value
         }
     }
 
     withdraw(value) {
-        var address = Blockchain.transaction.from
-        if (this.isContractOwner()) {
-            return Blockchain.transfer(address, new BigNumber(value))
-        } else {
-            throw new Error("You don't have permission to withdraw balance.")
-        }
+        this.onlyAdmins()
+        // Only the owner can have the withdraw fund
+        return Blockchain.transfer(this.owner, new BigNumber(value))
+    }
+
+    getReferPercentage() {
+        return this.referCutPercentage
     }
 
     luckyDraw(referer) {
-        var randomGirlId = parseInt(Math.random() * this.girlsList.length)
+        var randomGirlId = parseInt(Math.random() * (this.girlsList.length + 1))
         var { from, value } = Blockchain.transaction
-        if (`${this.cardPrice}` === `${value}`) {
+        if (value.eq(this.cardPrice)) {
             var tokenId = this._issue(from, randomGirlId)
             if (referer !== "") {
-                Blockchain.transfer(referer, new BigNumber(value).dividedToIntegerBy(20))
+                Blockchain.transfer(referer, new BigNumber(value).dividedToIntegerBy(100 / this.referCutPercentage))
             }
             return tokenId
         } else {

@@ -84,10 +84,10 @@ class StandardNRC721Token {
     ownerOf(_tokenId) {
         return this.tokenOwner.get(_tokenId)
     }
-    
+
     priceOf(_tokenId) {
         return this.tokenPrice.get(_tokenId)
-    }    
+    }
 
     approve(_to, _tokenId) {
         var from = Blockchain.transaction.from
@@ -281,7 +281,7 @@ class LinkIdolToken extends StandardNRC721Token {
         }
         return result
     }
-    
+
     getTotalSupply() {
         return this._length
     }
@@ -324,51 +324,59 @@ class LinkIdolContract extends LinkIdolToken {
             throw new Error("Sorry, But you don't have the permission as owner.")
         }
     }
-    
+
     onlyTokenOwner(_tokenId) {
         const { from } = Blockchain.transaction
         if (this.ownerOf(_tokenId) !== from) {
             throw new Error("Sorry, But you don't have the permission as the owner of the token.")
         }
-    }    
-    
+    }
+
     setTokenPrice(_tokenId, _value) {
-        this.onlyTokenOwner(_tokenId)  
+        this.onlyTokenOwner(_tokenId)
         this.tokenPrice = parseInt(_value) * this._nasToWei()
-    }   
-    
-    claim() {
-        const { from } = Blockchain.transaction   
-        const { getCardIdByTokenId, getTokenIDsByAddress, tokenClaimed } = this
-        var tokens = getTokenIDsByAddress(from)
+    }
+
+    countHerosBy(tokens) {
+        const { getCardIdByTokenId } = this
         var tag = []
         var count = 0
         for (const i in tokens) {
-            if (tag[getCardIdByTokenId[i]] == 0) {
+            if (tag[getCardIdByTokenId(i)] == false) {
                 count += 1
-                tag[getCardIdByTokenId[i]] = 1
+                tag[getCardIdByTokenId(i)] = true
             }
         }
+        return {
+            count,
+            tag
+        }
+    }
+
+    claim() {
+        const { from } = Blockchain.transaction
+        const { getCardIdByTokenId, countHerosBy, getTokenIDsByAddress, tokenClaimed } = this
+        var tokens = getTokenIDsByAddress(from)
+        const { count, tag } = countHerosBy(tokens)
         if (count !== 108) {
             throw new Error("Sorry, you don't have enough token.")
         }
         for (const i in tokens) {
-            if (tag[getCardIdByTokenId[i]] == 1) {
+            if (tag[getCardIdByTokenId(i)] == 1) {
                 tokenClaimed[i] = true
-                tag[getCardIdByTokenId[i]] = 2
             }
         }
     }
-           
+
     buyToken(_tokenId) {
-        var value = new BigNumber(Blockchain.transaction.value);    
+        var value = new BigNumber(Blockchain.transaction.value);
         if (value < this.priceOf(_tokenId)) {
             throw new Error("Sorry, insufficient bid.")
         }
         const { from } = Blockchain.transaction
         this.tokenOwner.set(_tokenId, from)
-        this.tokenPrice.set(_tokenId, 100 * this._nasToWei())        
-    }  
+        this.tokenPrice.set(_tokenId, 100 * this._nasToWei())
+    }
 
     getPrice() {
         return this.cardPrice

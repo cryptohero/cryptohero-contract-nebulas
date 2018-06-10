@@ -230,8 +230,7 @@ class LinkIdolToken extends StandardNRC721Token {
         LocalContractStorage.defineMapProperties(this, { "admins": null })
     }
 
-
-    init(name, symbol, initialGirlsList) {
+    init(name = "linkidol", symbol = "idl", initialGirlsList = []) {
         super.init(name, symbol)
         this._length = 0
         this.totalQty = 100

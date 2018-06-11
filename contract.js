@@ -43,14 +43,7 @@ class StandardNRC721Token {
             "tokenOwner": null,
             "tokenPrice": null,
             "tokenClaimed": null,
-            "ownedTokensCount": {
-                parse(value) {
-                    return new BigNumber(value)
-                },
-                stringify(o) {
-                    return o.toString(10)
-                }
-            },
+            "ownedTokensCount": null,
             "tokenApprovals": null,
             "tokenToChara": null,
             "operatorApprovals": {
@@ -74,11 +67,7 @@ class StandardNRC721Token {
 
     balanceOf(_owner) {
         var balance = this.ownedTokensCount.get(_owner)
-        if (balance instanceof BigNumber) {
-            return balance.toString(10)
-        } else {
-            return "0"
-        }
+        return balance
     }
 
     ownerOf(_tokenId) {
@@ -167,7 +156,7 @@ class StandardNRC721Token {
             throw new Error("permission denied in removeTokenFrom.")
         }
         var tokenCount = this.ownedTokensCount.get(_from)
-        if (tokenCount.lt(1)) {
+        if (tokenCount < 1) {
             throw new Error("Insufficient account balance in removeTokenFrom.")
         }
         this.tokenOwner.delete(_tokenId)
@@ -179,7 +168,7 @@ class StandardNRC721Token {
     _addTokenTo(_to, _tokenId) {
         this.tokenOwner.set(_tokenId, _to)
         this.tokenPrice.set(_tokenId, 100 * this._nasToWei())
-        var tokenCount = this.ownedTokensCount.get(_to) || new BigNumber(0)
+        var tokenCount = this.ownedTokensCount.get(_to) || 0
         this.ownedTokensCount.set(_to, tokenCount + 1)
     }
 
@@ -377,6 +366,10 @@ class LinkIdolContract extends LinkIdolToken {
         this.tokenPrice.set(_tokenId, 100 * this._nasToWei())
     }
 
+    _nasToWei() {
+        return 1000000000000000000
+    }
+
     getPrice() {
         return this.cardPrice
     }
@@ -417,6 +410,38 @@ class LinkIdolContract extends LinkIdolToken {
             return tokenId
         } else {
             throw new Error("Price is not matching, please check your transaction details.")
+        }
+    }
+
+    _issueMultipleCard(from, qty) {
+        const resultArray = []
+        for (let i = 0; i < qty; i += 1) {
+            var randomGirlId = parseInt(Math.random() * this.girlsList.length)
+            var tokenId = this._issue(from, randomGirlId)
+            resultArray.push(tokenId)
+        }
+        return resultArray
+    }
+
+    multiDraw(referer) {
+        var {
+            from,
+            value
+        } = Blockchain.transaction
+        const {
+            cardPrice,
+            referCutPercentage
+        } = this
+        const qty = value.dividedToIntegerBy(cardPrice)
+        if (value.gt(0)) {
+            const result = this._issueMultipleCard(from, qty)
+            if (referer !== "") {
+                const referCut = value.dividedToIntegerBy(100 / referCutPercentage)
+                Blockchain.transfer(referer, referCut)
+            }
+            return result
+        } else {
+            throw new Error("You don't have enough token, try again with more.")
         }
     }
 }

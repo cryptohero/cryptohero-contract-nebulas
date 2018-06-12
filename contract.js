@@ -218,7 +218,7 @@ class CryptoHeroToken extends StandardNRC721Token {
         LocalContractStorage.defineMapProperties(this, { "admins": null })
     }
 
-    init(name = "CryptoHero", symbol = "idl") {
+    init(name = "CryptoHero", symbol = "hero") {
         super.init(name, symbol)
         this._length = 0
         this.totalQty = 100
@@ -331,11 +331,16 @@ class CryptoHeroContract extends CryptoHeroToken {
         }
     }
 
+    countHerosByAddress(_address) {
+        const { countHerosBy, getTokenIDsByAddress } = this
+        const tokens = getTokenIDsByAddress(_address)
+        return countHerosBy(tokens)
+    }
+
     claim() {
         const { from } = Blockchain.transaction
-        const { getCardIdByTokenId, countHerosBy, getTokenIDsByAddress, tokenClaimed } = this
-        var tokens = getTokenIDsByAddress(from)
-        const { count, tag } = countHerosBy(tokens)
+        const { getCardIdByTokenId, countHerosByAddress, tokenClaimed } = this
+        const { count, tag } = countHerosByAddress(from)
         if (count !== 108) {
             throw new Error("Sorry, you don't have enough token.")
         }
@@ -382,7 +387,7 @@ class CryptoHeroContract extends CryptoHeroToken {
 
     withdraw(value) {
         this.onlyAdmins()
-        // Only the owner can have the withdraw fund
+        // Only the owner can have the withdraw fund, so be careful
         return Blockchain.transfer(this.owner, new BigNumber(value))
     }
 

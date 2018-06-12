@@ -334,21 +334,30 @@ class CryptoHeroContract extends CryptoHeroToken {
     countHerosByAddress(_address) {
         const { countHerosBy, getTokenIDsByAddress } = this
         const tokens = getTokenIDsByAddress(_address)
-        return countHerosBy(tokens)
+        const heros = countHerosBy(tokens)
+        return Object.assign(heros, tokens)
     }
 
     claim() {
         const { from } = Blockchain.transaction
         const { getCardIdByTokenId, countHerosByAddress, tokenClaimed } = this
-        const { count, tag } = countHerosByAddress(from)
+        const { count, tag, tokens } = countHerosByAddress(from)
         if (count !== 108) {
             throw new Error("Sorry, you don't have enough token.")
         }
-        for (const i in tokens) {
-            if (tag[getCardIdByTokenId(i)] == 1) {
-                tokenClaimed[i] = true
+        // Not iterating array like this, the statment 'const i in tokens'
+        // i is the index of the array, not the element itself
+        // need to fix
+        // for (const i in tokens) {
+        //     if (tag[getCardIdByTokenId(i)] == 1) {
+        //         tokenClaimed[i] = true
+        //     }
+        // }
+        tokens.forEach((tokenId) => {
+            if (tag[getCardIdByTokenId(tokenId)]) {
+                tokenClaimed[tokenId] = true
             }
-        }
+        });
         this.cardPrice -= 0.0108 * this._nasToWei()
     }
 

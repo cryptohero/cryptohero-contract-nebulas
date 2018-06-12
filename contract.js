@@ -354,6 +354,7 @@ class LinkIdolContract extends LinkIdolToken {
                 tokenClaimed[i] = true
             }
         }
+        this.cardPrice -= 0.0108 * this._nasToWei()
     }
 
     buyToken(_tokenId) {
@@ -407,6 +408,7 @@ class LinkIdolContract extends LinkIdolToken {
             if (referer !== "") {
                 Blockchain.transfer(referer, new BigNumber(value).dividedToIntegerBy(100 / this.referCutPercentage))
             }
+            this.cardPrice += 0.0001 * this._nasToWei()
             return tokenId
         } else {
             throw new Error("Price is not matching, please check your transaction details.")
@@ -419,6 +421,7 @@ class LinkIdolContract extends LinkIdolToken {
             var randomGirlId = parseInt(Math.random() * this.girlsList.length)
             var tokenId = this._issue(from, randomGirlId)
             resultArray.push(tokenId)
+            this.cardPrice += 0.0001 * this._nasToWei()
         }
         return resultArray
     }

@@ -1,7 +1,7 @@
 /**
- * LinkIdol Contract, copyright is owned by Andoromeda Foundation
+ * CryptoHero Contract Nebulas Version
+ * ©️ Andoromeda Foundation All Right Reserved.
  * @author: Frank Wei <frank@frankwei.xyz>
- * Last updated: 12:00 AM, May 30th
  * Test Net Contract Address: n1oecF9SK8wUKxAcTVCYfvsvG3P6TmHWdzW 
  * @version: 0.9 beta - need to find the potential bug
  */
@@ -206,7 +206,7 @@ class StandardNRC721Token {
     }
 }
 
-class LinkIdolToken extends StandardNRC721Token {
+class CryptoHeroToken extends StandardNRC721Token {
     constructor() {
         super()
         LocalContractStorage.defineProperties(this, {
@@ -219,7 +219,7 @@ class LinkIdolToken extends StandardNRC721Token {
         LocalContractStorage.defineMapProperties(this, { "admins": null })
     }
 
-    init(name = "linkidol", symbol = "idl", initialGirlsList = []) {
+    init(name = "CryptoHero", symbol = "idl", initialGirlsList = []) {
         super.init(name, symbol)
         this._length = 0
         this.totalQty = 100
@@ -275,7 +275,7 @@ class LinkIdolToken extends StandardNRC721Token {
     }
 }
 
-class LinkIdolContract extends LinkIdolToken {
+class CryptoHeroContract extends CryptoHeroToken {
     constructor() {
         super()
         LocalContractStorage.defineProperties(this, {
@@ -449,4 +449,4 @@ class LinkIdolContract extends LinkIdolToken {
     }
 }
 
-module.exports = LinkIdolContract
+module.exports = CryptoHeroContract

@@ -211,7 +211,6 @@ class CryptoHeroToken extends StandardNRC721Token {
         super()
         LocalContractStorage.defineProperties(this, {
             _length: null,
-            girlsList: null,
             // Changed `totalQty` before deploy!!!            
             totalQty: null
         })
@@ -219,20 +218,19 @@ class CryptoHeroToken extends StandardNRC721Token {
         LocalContractStorage.defineMapProperties(this, { "admins": null })
     }
 
-    init(name = "CryptoHero", symbol = "idl", initialGirlsList = []) {
+    init(name = "CryptoHero", symbol = "idl") {
         super.init(name, symbol)
         this._length = 0
         this.totalQty = 100
-        this.girlsList = initialGirlsList
     }
 
-    _issue(_to, _girlId) {
+    _issue(_to, _heroId) {
         var tokenId = this._length
         if (this.isSoldOut()) {
             throw new Error("Sorry, the card pool is empty now.")
         } else {
             this._mint(_to, tokenId)
-            this.tokenToChara.set(tokenId, _girlId)
+            this.tokenToChara.set(tokenId, _heroId)
             this.totalQty -= 1;
             this._length += 1;
             return tokenId
@@ -251,14 +249,6 @@ class CryptoHeroToken extends StandardNRC721Token {
         return this.tokenToChara.get(_tokenId)
     }
 
-    getCardNameByTokenId(_tokenId) {
-        const cardId = this.getCardIdByTokenId(_tokenId)
-        return this.girlsList[cardId]
-    }
-
-    getGirlsList() {
-        return this.girlsList
-    }
 
     getTokenIDsByAddress(_address) {
         var result = []
@@ -285,9 +275,9 @@ class CryptoHeroContract extends CryptoHeroToken {
         })
     }
 
-    init(name, symbol, initialPrice, initialGirlsList) {
+    init(name, symbol, initialPrice, initialHerosList) {
         const { from } = Blockchain.transaction
-        super.init(name, symbol, initialGirlsList)
+        super.init(name, symbol, initialHerosList)
         this.admins.set(from, "true")
         this.cardPrice = initialPrice
         this.owner = from
@@ -401,10 +391,10 @@ class CryptoHeroContract extends CryptoHeroToken {
     }
 
     luckyDraw(referer) {
-        var randomGirlId = parseInt(Math.random() * (this.girlsList.length + 1))
+        var randomHeroId = parseInt(Math.random() * (108 + 1))
         var { from, value } = Blockchain.transaction
         if (value.eq(this.cardPrice)) {
-            var tokenId = this._issue(from, randomGirlId)
+            var tokenId = this._issue(from, randomHeroId)
             if (referer !== "") {
                 Blockchain.transfer(referer, new BigNumber(value).dividedToIntegerBy(100 / this.referCutPercentage))
             }
@@ -418,8 +408,8 @@ class CryptoHeroContract extends CryptoHeroToken {
     _issueMultipleCard(from, qty) {
         const resultArray = []
         for (let i = 0; i < qty; i += 1) {
-            var randomGirlId = parseInt(Math.random() * this.girlsList.length)
-            var tokenId = this._issue(from, randomGirlId)
+            var randomHeroId = parseInt(Math.random() * (108 + 1))
+            var tokenId = this._issue(from, randomHeroId)
             resultArray.push(tokenId)
             this.cardPrice += 0.0001 * this._nasToWei()
         }

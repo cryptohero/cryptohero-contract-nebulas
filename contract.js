@@ -2,8 +2,8 @@
  * CryptoHero Contract Nebulas Version
  * ©️ Andoromeda Foundation All Right Reserved.
  * @author: Frank Wei <frank@frankwei.xyz>
- * Test Net Contract Address: n1oecF9SK8wUKxAcTVCYfvsvG3P6TmHWdzW 
- * @version: 0.9 beta - need to find the potential bug
+ * Test Net Contract Address: n1fQppXaCDseqi1hgMxYTPrNgVBYyryEVzU 
+ * @version: 1.0
  */
 "use strict"
 

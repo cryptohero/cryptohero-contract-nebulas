@@ -275,9 +275,9 @@ class CryptoHeroContract extends CryptoHeroToken {
         })
     }
 
-    init(name, symbol, initialPrice, initialHerosList) {
+    init(initialPrice) {
         const { from } = Blockchain.transaction
-        super.init(name, symbol, initialHerosList)
+        super.init()
         this.admins.set(from, "true")
         this.cardPrice = initialPrice
         this.owner = from
@@ -345,14 +345,7 @@ class CryptoHeroContract extends CryptoHeroToken {
         if (count !== 108) {
             throw new Error("Sorry, you don't have enough token.")
         }
-        // Not iterating array like this, the statment 'const i in tokens'
-        // i is the index of the array, not the element itself
-        // need to fix
-        // for (const i in tokens) {
-        //     if (tag[getCardIdByTokenId(i)] == 1) {
-        //         tokenClaimed[i] = true
-        //     }
-        // }
+
         tokens.forEach((tokenId) => {
             if (tag[getCardIdByTokenId(tokenId)]) {
                 tokenClaimed[tokenId] = true

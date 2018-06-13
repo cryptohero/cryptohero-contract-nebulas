@@ -2,7 +2,7 @@
  * CryptoHero Contract Nebulas Version
  * ©️ Andoromeda Foundation All Right Reserved.
  * @author: Frank Wei <frank@frankwei.xyz>
- * Test Net Contract Address: n1fQppXaCDseqi1hgMxYTPrNgVBYyryEVzU 
+ * Test Net Contract Address: n21yXQ5LuaMdEWfiwWBvSeM6Dptf3AaGLsj 
  * @version: 1.0
  */
 "use strict"
@@ -34,6 +34,19 @@ class Operator {
     }
 }
 
+class Tool {
+    static fromNasToWei(value) {
+        return new BigNumber("1000000000000000000").times(value)
+    }
+    static fromWeiToNas(value) {
+        if (value instanceof BigNumber) {
+            return value.dividedBy("1000000000000000000")
+        } else {
+            return new BigNumber(value).dividedBy("1000000000000000000")
+        }
+    }
+}
+
 
 class StandardNRC721Token {
     constructor() {
@@ -41,7 +54,14 @@ class StandardNRC721Token {
         LocalContractStorage.defineProperties(this, { _name: null, })
         LocalContractStorage.defineMapProperties(this, {
             "tokenOwner": null,
-            "tokenPrice": null,
+            "tokenPrice": {
+                parse(value) {
+                    return new BigNumber(value)
+                },
+                stringify(o) {
+                    return o.toString(10)
+                }
+            },
             "tokenClaimed": null,
             "ownedTokensCount": null,
             "tokenApprovals": null,
@@ -167,7 +187,7 @@ class StandardNRC721Token {
     // These function can be directly called without underscore in the first letter
     _addTokenTo(_to, _tokenId) {
         this.tokenOwner.set(_tokenId, _to)
-        this.tokenPrice.set(_tokenId, 100 * this._nasToWei())
+        this.tokenPrice.set(_tokenId, Tool.fromNasToWei(100))
         var tokenCount = this.ownedTokensCount.get(_to) || 0
         this.ownedTokensCount.set(_to, tokenCount + 1)
     }
@@ -211,17 +231,16 @@ class CryptoHeroToken extends StandardNRC721Token {
         super()
         LocalContractStorage.defineProperties(this, {
             _length: null,
-            // Changed `totalQty` before deploy!!!            
             totalQty: null
         })
 
         LocalContractStorage.defineMapProperties(this, { "admins": null })
     }
 
-    init(name = "CryptoHero", symbol = "hero") {
+    init(name = "CryptoHero", symbol = "hero", totalQty = 10000) {
         super.init(name, symbol)
         this._length = 0
-        this.totalQty = 100
+        this.totalQty = new BigNumber(totalQty)
     }
 
     _issue(_to, _heroId) {
@@ -231,18 +250,18 @@ class CryptoHeroToken extends StandardNRC721Token {
         } else {
             this._mint(_to, tokenId)
             this.tokenToChara.set(tokenId, _heroId)
-            this.totalQty -= 1;
+            this.totalQty = new BigNumber(this.totalQty).minus(1);
             this._length += 1;
             return tokenId
         }
     }
 
     isSoldOut() {
-        return this.totalQty <= 0
+        return new BigNumber(0).gte(this.totalQty)
     }
 
     getCardsLeft() {
-        return this.totalQty;
+        return new BigNumber(this.totalQty).toString(10);
     }
 
     getCardIdByTokenId(_tokenId) {
@@ -269,17 +288,17 @@ class CryptoHeroContract extends CryptoHeroToken {
     constructor() {
         super()
         LocalContractStorage.defineProperties(this, {
-            cardPrice: null,
+            drawPrice: null,
             owner: null,
             referCut: null
         })
     }
 
-    init(initialPrice) {
+    init(initialPrice = "10000000000000") {
         const { from } = Blockchain.transaction
         super.init()
         this.admins.set(from, "true")
-        this.cardPrice = initialPrice
+        this.drawPrice = new BigNumber(initialPrice)
         this.owner = from
         this.referCutPercentage = 5
     }
@@ -312,7 +331,7 @@ class CryptoHeroContract extends CryptoHeroToken {
 
     setTokenPrice(_tokenId, _value) {
         this.onlyTokenOwner(_tokenId)
-        this.tokenPrice = parseInt(_value) * this._nasToWei()
+        this.tokenPrice = Tool.fromNasToWei(_value)
     }
 
     countHerosBy(tokens) {
@@ -351,7 +370,8 @@ class CryptoHeroContract extends CryptoHeroToken {
                 tokenClaimed[tokenId] = true
             }
         });
-        this.cardPrice -= 0.0108 * this._nasToWei()
+        // TODO FIX
+        this.drawPrice = this.drawPrice.minus(Tool.fromNasToWei(0.0108))
     }
 
     buyToken(_tokenId) {
@@ -361,21 +381,17 @@ class CryptoHeroContract extends CryptoHeroToken {
         }
         const { from } = Blockchain.transaction
         this.tokenOwner.set(_tokenId, from)
-        this.tokenPrice.set(_tokenId, 100 * this._nasToWei())
+        this.tokenPrice.set(_tokenId, Tool.fromNasToWei(100))
     }
 
-    _nasToWei() {
-        return 1000000000000000000
-    }
-
-    getPrice() {
-        return this.cardPrice
+    getDrawPrice() {
+        return this.drawPrice
     }
 
     // For keeping price to fiat
     changePrice(value) {
         this.onlyAdmins()
-        this.cardPrice = value
+        this.drawPrice = new BigNumber(value)
     }
 
     changeReferPercentage(value) {
@@ -400,12 +416,13 @@ class CryptoHeroContract extends CryptoHeroToken {
     luckyDraw(referer) {
         var randomHeroId = parseInt(Math.random() * (108 + 1))
         var { from, value } = Blockchain.transaction
-        if (value.eq(this.cardPrice)) {
+        if (value.eq(this.drawPrice)) {
             var tokenId = this._issue(from, randomHeroId)
             if (referer !== "") {
                 Blockchain.transfer(referer, new BigNumber(value).dividedToIntegerBy(100 / this.referCutPercentage))
             }
-            this.cardPrice += 0.0001 * this._nasToWei()
+
+            this.drawPrice = this.drawPrice.plus(0.0001)
             return tokenId
         } else {
             throw new Error("Price is not matching, please check your transaction details.")
@@ -418,8 +435,9 @@ class CryptoHeroContract extends CryptoHeroToken {
             var randomHeroId = parseInt(Math.random() * (108 + 1))
             var tokenId = this._issue(from, randomHeroId)
             resultArray.push(tokenId)
-            this.cardPrice += 0.0001 * this._nasToWei()
         }
+        const totalAdd = Tool.fromNasToWei(0.0001).times(qty)
+        this.drawPrice = totalAdd.plus(this.drawPrice)
         return resultArray
     }
 
@@ -429,10 +447,10 @@ class CryptoHeroContract extends CryptoHeroToken {
             value
         } = Blockchain.transaction
         const {
-            cardPrice,
+            drawPrice,
             referCutPercentage
         } = this
-        const qty = value.dividedToIntegerBy(cardPrice)
+        const qty = value.dividedToIntegerBy(drawPrice)
         if (value.gt(0)) {
             const result = this._issueMultipleCard(from, qty)
             if (referer !== "") {

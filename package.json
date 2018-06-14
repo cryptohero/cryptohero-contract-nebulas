@@ -1,0 +1,26 @@
+{
+  "name": "cryptohero-contract-nebulas",
+  "version": "1.0.0",
+  "description": "",
+  "main": "deploy.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Andoromeda-Foundation/cryptohero-contract-nebulas.git"
+  },
+  "keywords": [
+    "nebulas",
+    "nebulasio"
+  ],
+  "author": "Andoromeda Foundation",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Andoromeda-Foundation/cryptohero-contract-nebulas/issues"
+  },
+  "homepage": "https://github.com/Andoromeda-Foundation/cryptohero-contract-nebulas#readme",
+  "dependencies": {
+    "nebulas": "^0.5.1"
+  }
+}

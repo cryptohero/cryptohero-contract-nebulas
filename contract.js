@@ -2,7 +2,7 @@
  * CryptoHero Contract Nebulas Version
  * ©️ Andoromeda Foundation All Right Reserved.
  * @author: Frank Wei <frank@frankwei.xyz>
- * Test Net Contract Address: n21yXQ5LuaMdEWfiwWBvSeM6Dptf3AaGLsj 
+ * Test Net Contract Address: n1eM2FD1xoxbpHkmzZRZtfAaVpHF7mBbA3j @ 10:54 PM 6/14/2018 
  * @version: 1.0
  */
 "use strict"
@@ -44,6 +44,9 @@ class Tool {
         } else {
             return new BigNumber(value).dividedBy("1000000000000000000")
         }
+    }
+    static getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 }
 
@@ -359,7 +362,7 @@ class CryptoHeroContract extends CryptoHeroToken {
 
     claim() {
         const { from } = Blockchain.transaction
-        const { getCardIdByTokenId, countHerosByAddress, tokenClaimed } = this
+        const { getCardIdByTokenId, countHerosByAddress, drawPrice } = this
         const { count, tag, tokens } = countHerosByAddress(from)
         if (count !== 108) {
             throw new Error("Sorry, you don't have enough token.")
@@ -367,11 +370,14 @@ class CryptoHeroContract extends CryptoHeroToken {
 
         tokens.forEach((tokenId) => {
             if (tag[getCardIdByTokenId(tokenId)]) {
-                tokenClaimed[tokenId] = true
+                this.tokenClaimed[tokenId] = true
             }
         });
-        // TODO FIX
-        this.drawPrice = this.drawPrice.minus(Tool.fromNasToWei(0.0108))
+        this.drawPrice = new BigNumber(drawPrice).minus(Tool.fromNasToWei(0.0108))
+    }
+
+    isTokenClaimed(tokenId) {
+        return this.tokenClaimed[tokenId]
     }
 
     buyToken(_tokenId) {
@@ -414,7 +420,8 @@ class CryptoHeroContract extends CryptoHeroToken {
     }
 
     luckyDraw(referer) {
-        var randomHeroId = parseInt(Math.random() * (108 + 1))
+        // card 0 is now easter egg
+        var randomHeroId = Tool.getRandomInt(0, 114)
         var { from, value } = Blockchain.transaction
         if (value.eq(this.drawPrice)) {
             var tokenId = this._issue(from, randomHeroId)
@@ -432,7 +439,7 @@ class CryptoHeroContract extends CryptoHeroToken {
     _issueMultipleCard(from, qty) {
         const resultArray = []
         for (let i = 0; i < qty; i += 1) {
-            var randomHeroId = parseInt(Math.random() * (108 + 1))
+            var randomHeroId = Tool.getRandomInt(0, 114)
             var tokenId = this._issue(from, randomHeroId)
             resultArray.push(tokenId)
         }

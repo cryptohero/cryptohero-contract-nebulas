@@ -46,7 +46,7 @@ class Tool {
         }
     }
     static getRandomInt(min, max) {
-        return Math.floor(Math.random() * (max - min + 1)) + min;
+        return Math.floor(Math.random() * (max - min)) + min;
     }
 }
 
@@ -428,11 +428,27 @@ class CryptoHeroContract extends CryptoHeroToken {
         return this.referCutPercentage
     }
 
+    getType(r) {
+        if (r <= bigDipper * 36) {
+            return {1, 36}
+        }
+        r -= bigDipper * 36;
+        if (r <= thug * 72) {
+            return {37, 72}
+        }
+        r -= thug * 72
+        if (r <= goon * 6) {
+            return {109, 6}
+        }
+        return {0, 1}
+    }
+
     dynamicDraw() {
         const { from, value } = Blockchain.transaction
         const { thug, bigDipper, goon, easterEgg } = this.drawChances
-        const total = (thug * 72) + (bigDipper * 36) + (goon * 6) + easterEgg
-        const randomHeroId = Tool.getRandomInt(0, total) % 114
+        const r = Tool.getRandomInt(0, (bigDipper * 36) + (thug * 72) + (goon * 6) + easterEgg)
+        const { offset, count } = getType(r)
+        const randomHeroId = offset + Tool.getRandomInt(0, count)
         if (value.eq(this.drawPrice)) {
             var tokenId = this._issue(from, randomHeroId)
             this.drawPrice = this.drawPrice.plus(0.0001)

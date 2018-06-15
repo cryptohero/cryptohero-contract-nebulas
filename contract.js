@@ -298,12 +298,12 @@ class CryptoHeroContract extends CryptoHeroToken {
         })
     }
 
-    init(initialPrice = "10000000000000", drawChances = [
-        500 * 72, 
-        250 * 36,
-        10 * 6,
-        1 
-    ]) {
+    init(initialPrice = "10000000000000", drawChances = {
+        thug: 500,
+        bigDipper: 250,
+        goon: 10,
+        easterEgg: 1
+    }) {
         const { from } = Blockchain.transaction
         super.init()
         this.admins.set(from, "true")
@@ -388,9 +388,6 @@ class CryptoHeroContract extends CryptoHeroToken {
         return this.tokenClaimed[tokenId]
     }
 
-    // dynamicDraw() {
-
-    // }
 
     buyToken(_tokenId) {
         var value = new BigNumber(Blockchain.transaction.value);
@@ -429,6 +426,20 @@ class CryptoHeroContract extends CryptoHeroToken {
 
     getReferPercentage() {
         return this.referCutPercentage
+    }
+
+    dynamicDraw() {
+        const { from, value } = Blockchain.transaction
+        const { thug, bigDipper, goon, easterEgg } = this.drawChances
+        const total = (thug * 72) + (bigDipper * 36) + (goon * 6) + easterEgg
+        const randomHeroId = Tool.getRandomInt(0, total) % 114
+        if (value.eq(this.drawPrice)) {
+            var tokenId = this._issue(from, randomHeroId)
+            this.drawPrice = this.drawPrice.plus(0.0001)
+            return tokenId
+        } else {
+            throw new Error("Price is not matching, please check your transaction details.")
+        }
     }
 
     luckyDraw(referer) {

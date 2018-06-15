@@ -240,7 +240,7 @@ class CryptoHeroToken extends StandardNRC721Token {
         LocalContractStorage.defineMapProperties(this, { "admins": null })
     }
 
-    init(name = "CryptoHero", symbol = "hero", totalQty = 10000) {
+    init(name = "CryptoHero", symbol = "hero", totalQty = "210000000") {
         super.init(name, symbol)
         this._length = 0
         this.totalQty = new BigNumber(totalQty)
@@ -293,17 +293,25 @@ class CryptoHeroContract extends CryptoHeroToken {
         LocalContractStorage.defineProperties(this, {
             drawPrice: null,
             owner: null,
-            referCut: null
+            referCut: null,
+            drawChances: null
         })
     }
 
-    init(initialPrice = "10000000000000") {
+    init(initialPrice = "10000000000000", drawChances = [
+        500 * 72, 
+        250 * 36,
+        10 * 6,
+        1 
+    ]) {
         const { from } = Blockchain.transaction
         super.init()
         this.admins.set(from, "true")
         this.drawPrice = new BigNumber(initialPrice)
         this.owner = from
         this.referCutPercentage = 5
+        this.drawChances = drawChances
+
     }
 
     onlyAdmins() {
@@ -334,7 +342,7 @@ class CryptoHeroContract extends CryptoHeroToken {
 
     setTokenPrice(_tokenId, _value) {
         this.onlyTokenOwner(_tokenId)
-        this.tokenPrice = Tool.fromNasToWei(_value)
+        this.tokenPrice.set(_tokenId, Tool.fromNasToWei(_value))
     }
 
     countHerosBy(tokens) {
@@ -379,6 +387,10 @@ class CryptoHeroContract extends CryptoHeroToken {
     isTokenClaimed(tokenId) {
         return this.tokenClaimed[tokenId]
     }
+
+    // dynamicDraw() {
+
+    // }
 
     buyToken(_tokenId) {
         var value = new BigNumber(Blockchain.transaction.value);

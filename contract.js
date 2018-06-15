@@ -456,7 +456,7 @@ class CryptoHeroContract extends CryptoHeroToken {
         }
     }
 
-    _dynamicDraw() {
+    _dynamicDraw(from) {
         const { thug, bigDipper, goon, easterEgg } = this.drawChances
         const r = Tool.getRandomInt(0, bigDipper * 36 + thug * 72 + goon * 6 + easterEgg)
         const { offset, count } = this.getType(r)
@@ -468,7 +468,7 @@ class CryptoHeroContract extends CryptoHeroToken {
     _issueMultipleCard(from, qty) {
         const resultArray = []
         for (let i = 0; i < qty; i += 1) {
-            var randomHeroId = this._dynamicDraw()
+            var tokenId = this._dynamicDraw(from)
             resultArray.push(tokenId)
         }
         // In the final the base is 0.0001, 0.00000000001 for dev only

@@ -459,7 +459,7 @@ class CryptoHeroContract extends CryptoHeroToken {
     _dynamicDraw() {
         const { thug, bigDipper, goon, easterEgg } = this.drawChances
         const r = Tool.getRandomInt(0, bigDipper * 36 + thug * 72 + goon * 6 + easterEgg)
-        const { offset, count } = getType(r)
+        const { offset, count } = this.getType(r)
         const randomHeroId = offset + Tool.getRandomInt(0, count)
         var tokenId = this._issue(from, randomHeroId)
         return tokenId

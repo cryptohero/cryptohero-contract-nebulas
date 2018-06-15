@@ -429,24 +429,37 @@ class CryptoHeroContract extends CryptoHeroToken {
     }
 
     getType(r) {
+        const { thug, bigDipper, goon } = this.drawChances
         if (r <= bigDipper * 36) {
-            return {1, 36}
+            return {
+                offset: 1,
+                count: 36
+            }
         }
         r -= bigDipper * 36;
         if (r <= thug * 72) {
-            return {37, 72}
+            return {
+                offset: 37,
+                count: 72
+            }
         }
         r -= thug * 72
         if (r <= goon * 6) {
-            return {109, 6}
+            return {
+                offset: 109,
+                count: 6
+            }
         }
-        return {0, 1}
+        return {
+            offset: 0,
+            count: 1
+        }
     }
 
     dynamicDraw() {
         const { from, value } = Blockchain.transaction
         const { thug, bigDipper, goon, easterEgg } = this.drawChances
-        const r = Tool.getRandomInt(0, (bigDipper * 36) + (thug * 72) + (goon * 6) + easterEgg)
+        const r = Tool.getRandomInt(0, bigDipper * 36 + thug * 72 + goon * 6 + easterEgg)
         const { offset, count } = getType(r)
         const randomHeroId = offset + Tool.getRandomInt(0, count)
         if (value.eq(this.drawPrice)) {

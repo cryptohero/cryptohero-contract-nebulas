@@ -335,7 +335,8 @@ class CryptoHeroContract extends CryptoHeroToken {
 
     onlyTokenOwner(_tokenId) {
         const { from } = Blockchain.transaction
-        if (this.ownerOf(_tokenId) !== from) {
+        var owner = this.ownerOf(_tokenId)
+        if (from != owner) {
             throw new Error("Sorry, But you don't have the permission as the owner of the token.")
         }
     }

@@ -54,7 +54,9 @@ class Tool {
 class StandardNRC721Token {
     constructor() {
         // Contract Need to store on-chain data in LocalContractStorage
-        LocalContractStorage.defineProperties(this, { _name: null, })
+        LocalContractStorage.defineProperties(this, {
+            _name: null,
+        })
         LocalContractStorage.defineMapProperties(this, {
             "tokenOwner": null,
             "tokenPrice": {
@@ -237,7 +239,9 @@ class CryptoHeroToken extends StandardNRC721Token {
             totalQty: null
         })
 
-        LocalContractStorage.defineMapProperties(this, { "admins": null })
+        LocalContractStorage.defineMapProperties(this, {
+            "admins": null
+        })
     }
 
     init(name = "CryptoHero", symbol = "hero", totalQty = "210000000") {
@@ -304,7 +308,9 @@ class CryptoHeroContract extends CryptoHeroToken {
         goon: 10,
         easterEgg: 1
     }) {
-        const { from } = Blockchain.transaction
+        const {
+            from
+        } = Blockchain.transaction
         super.init()
         this.admins.set(from, "true")
         this.drawPrice = new BigNumber(initialPrice)
@@ -315,7 +321,9 @@ class CryptoHeroContract extends CryptoHeroToken {
     }
 
     onlyAdmins() {
-        const { from } = Blockchain.transaction
+        const {
+            from
+        } = Blockchain.transaction
         if (!this.admins.get(from)) {
             throw new Error("Sorry, You don't have the permission as admins.")
         }
@@ -327,15 +335,20 @@ class CryptoHeroContract extends CryptoHeroToken {
     }
 
     onlyContractOwner() {
-        const { from } = Blockchain.transaction
+        const {
+            from
+        } = Blockchain.transaction
         if (this.owner !== from) {
             throw new Error("Sorry, But you don't have the permission as owner.")
         }
     }
 
     onlyTokenOwner(_tokenId) {
-        const { from } = Blockchain.transaction
-        if (this.ownerOf(_tokenId) !== from) {
+        const {
+            from
+        } = Blockchain.transaction
+        var owner = this.ownerOf(_tokenId)
+        if (from != owner) {
             throw new Error("Sorry, But you don't have the permission as the owner of the token.")
         }
     }
@@ -346,7 +359,9 @@ class CryptoHeroContract extends CryptoHeroToken {
     }
 
     countHerosBy(tokens) {
-        const { getCardIdByTokenId } = this
+        const {
+            getCardIdByTokenId
+        } = this
         var tag = []
         var count = 0
         for (const i in tokens) {
@@ -362,16 +377,29 @@ class CryptoHeroContract extends CryptoHeroToken {
     }
 
     countHerosByAddress(_address) {
-        const { countHerosBy, getTokenIDsByAddress } = this
+        const {
+            countHerosBy,
+            getTokenIDsByAddress
+        } = this
         const tokens = getTokenIDsByAddress(_address)
         const heros = countHerosBy(tokens)
         return Object.assign(heros, tokens)
     }
 
     claim() {
-        const { from } = Blockchain.transaction
-        const { getCardIdByTokenId, countHerosByAddress, drawPrice } = this
-        const { count, tag, tokens } = countHerosByAddress(from)
+        const {
+            from
+        } = Blockchain.transaction
+        const {
+            getCardIdByTokenId,
+            countHerosByAddress,
+            drawPrice
+        } = this
+        const {
+            count,
+            tag,
+            tokens
+        } = countHerosByAddress(from)
         if (count !== 108) {
             throw new Error("Sorry, you don't have enough token.")
         }
@@ -394,7 +422,9 @@ class CryptoHeroContract extends CryptoHeroToken {
         if (value < this.priceOf(_tokenId)) {
             throw new Error("Sorry, insufficient bid.")
         }
-        const { from } = Blockchain.transaction
+        const {
+            from
+        } = Blockchain.transaction
         this.tokenOwner.set(_tokenId, from)
         this.tokenPrice.set(_tokenId, Tool.fromNasToWei(100))
     }
@@ -429,7 +459,11 @@ class CryptoHeroContract extends CryptoHeroToken {
     }
 
     getType(r) {
-        const { thug, bigDipper, goon } = this.drawChances
+        const {
+            thug,
+            bigDipper,
+            goon
+        } = this.drawChances
         if (r <= bigDipper * 36) {
             return {
                 offset: 1,
@@ -456,51 +490,36 @@ class CryptoHeroContract extends CryptoHeroToken {
         }
     }
 
-    dynamicDraw() {
-        const { from, value } = Blockchain.transaction
-        const { thug, bigDipper, goon, easterEgg } = this.drawChances
+    _dynamicDraw(from) {
+        const {
+            thug,
+            bigDipper,
+            goon,
+            easterEgg
+        } = this.drawChances
         const r = Tool.getRandomInt(0, bigDipper * 36 + thug * 72 + goon * 6 + easterEgg)
-        const { offset, count } = getType(r)
+        const {
+            offset,
+            count
+        } = this.getType(r)
         const randomHeroId = offset + Tool.getRandomInt(0, count)
-        if (value.eq(this.drawPrice)) {
-            var tokenId = this._issue(from, randomHeroId)
-            this.drawPrice = this.drawPrice.plus(0.0001)
-            return tokenId
-        } else {
-            throw new Error("Price is not matching, please check your transaction details.")
-        }
-    }
-
-    luckyDraw(referer) {
-        // card 0 is now easter egg
-        var randomHeroId = Tool.getRandomInt(0, 114)
-        var { from, value } = Blockchain.transaction
-        if (value.eq(this.drawPrice)) {
-            var tokenId = this._issue(from, randomHeroId)
-            if (referer !== "") {
-                Blockchain.transfer(referer, new BigNumber(value).dividedToIntegerBy(100 / this.referCutPercentage))
-            }
-
-            this.drawPrice = this.drawPrice.plus(0.0001)
-            return tokenId
-        } else {
-            throw new Error("Price is not matching, please check your transaction details.")
-        }
+        var tokenId = this._issue(from, randomHeroId)
+        return tokenId
     }
 
     _issueMultipleCard(from, qty) {
         const resultArray = []
         for (let i = 0; i < qty; i += 1) {
-            var randomHeroId = Tool.getRandomInt(0, 114)
-            var tokenId = this._issue(from, randomHeroId)
+            var tokenId = this._dynamicDraw(from)
             resultArray.push(tokenId)
         }
-        const totalAdd = Tool.fromNasToWei(0.0001).times(qty)
+        // In the final the base is 0.0001, 0.00000000001 for dev only
+        const totalAdd = Tool.fromNasToWei(0.00000000001).times(qty)
         this.drawPrice = totalAdd.plus(this.drawPrice)
         return resultArray
     }
 
-    multiDraw(referer) {
+    draw(referer) {
         var {
             from,
             value

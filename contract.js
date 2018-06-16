@@ -425,6 +425,13 @@ class CryptoHeroContract extends CryptoHeroToken {
         const {
             from
         } = Blockchain.transaction
+
+        const remain = this.priceOf(_tokenId) - value;
+        Blockchain.transfer(from, remain)        
+        
+        const profit = value.multipliedBy(97).dividedBy(100)
+        Blockchain.transfer(this.ownerOf(_tokenId), profit)        
+
         this.tokenOwner.set(_tokenId, from)
         this.tokenPrice.set(_tokenId, Tool.fromNasToWei(100))
     }

@@ -2,7 +2,6 @@
  * CryptoHero Contract Nebulas Version
  * ©️ Andoromeda Foundation All Right Reserved.
  * @author: Frank Wei <frank@frankwei.xyz>
- * Test Net Contract Address: n1eM2FD1xoxbpHkmzZRZtfAaVpHF7mBbA3j @ 10:54 PM 6/14/2018 
  * @version: 1.0
  */
 "use strict"
@@ -67,10 +66,8 @@ class StandardNRC721Token {
                     return o.toString(10)
                 }
             },
-            "tokenClaimed": null,
             "ownedTokensCount": null,
             "tokenApprovals": null,
-            "tokenToChara": null,
             "operatorApprovals": {
                 parse(value) {
                     return new Operator(value)
@@ -118,10 +115,10 @@ class StandardNRC721Token {
             throw new Error("permission denied in approve.")
         }
     }
+
     getApproved(_tokenId) {
         return this.tokenApprovals.get(_tokenId)
     }
-
 
     setApprovalForAll(_to, _approved) {
         var from = Blockchain.transaction.from
@@ -240,7 +237,9 @@ class CryptoHeroToken extends StandardNRC721Token {
         })
 
         LocalContractStorage.defineMapProperties(this, {
-            "admins": null
+            "admins": null,
+            "tokenClaimed": null,            
+            "tokenToChara": null         
         })
     }
 
@@ -267,6 +266,10 @@ class CryptoHeroToken extends StandardNRC721Token {
         return new BigNumber(0).gte(this.totalQty)
     }
 
+    isTokenClaimed(tokenId) {
+        return this.tokenClaimed[tokenId]
+    }        
+
     getCardsLeft() {
         return new BigNumber(this.totalQty).toString(10);
     }
@@ -274,7 +277,6 @@ class CryptoHeroToken extends StandardNRC721Token {
     getCardIdByTokenId(_tokenId) {
         return this.tokenToChara.get(_tokenId)
     }
-
 
     getTokenIDsByAddress(_address) {
         var result = []
@@ -317,7 +319,6 @@ class CryptoHeroContract extends CryptoHeroToken {
         this.owner = from
         this.referCutPercentage = 5
         this.drawChances = drawChances
-
     }
 
     onlyAdmins() {
@@ -327,11 +328,6 @@ class CryptoHeroContract extends CryptoHeroToken {
         if (!this.admins.get(from)) {
             throw new Error("Sorry, You don't have the permission as admins.")
         }
-    }
-
-    setAdmins(address) {
-        this.onlyContractOwner()
-        this.admins.set(address, "true")
     }
 
     onlyContractOwner() {
@@ -352,6 +348,11 @@ class CryptoHeroContract extends CryptoHeroToken {
             throw new Error("Sorry, But you don't have the permission as the owner of the token.")
         }
     }
+
+    setAdmins(address) {
+        this.onlyContractOwner()
+        this.admins.set(address, "true")
+    }    
 
     setTokenPrice(_tokenId, _value) {
         this.onlyTokenOwner(_tokenId)
@@ -411,11 +412,6 @@ class CryptoHeroContract extends CryptoHeroToken {
         });
         this.drawPrice = new BigNumber(drawPrice).minus(Tool.fromNasToWei(0.0108))
     }
-
-    isTokenClaimed(tokenId) {
-        return this.tokenClaimed[tokenId]
-    }
-
 
     buyToken(_tokenId) {
         var value = new BigNumber(Blockchain.transaction.value);

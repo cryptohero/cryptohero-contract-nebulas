@@ -55,6 +55,7 @@ class StandardNRC721Token {
         // Contract Need to store on-chain data in LocalContractStorage
         LocalContractStorage.defineProperties(this, {
             _name: null,
+            _symbol: null
         })
         LocalContractStorage.defineMapProperties(this, {
             "tokenOwner": null,
@@ -71,12 +72,17 @@ class StandardNRC721Token {
         })
     }
 
-    init(name) {
+    init(name, symbol) {
         this._name = name
+        this._symbol = symbol
     }
 
     name() {
         return this._name
+    }
+
+    symbol() {
+        return this._symbol
     }
 
     balanceOf(_owner) {

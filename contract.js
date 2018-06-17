@@ -225,7 +225,6 @@ class CryptoHeroToken extends StandardNRC721Token {
         })
 
         LocalContractStorage.defineMapProperties(this, {
-            "admins": null,
             "tokenPrice": {
                 parse(value) {
                     return new BigNumber(value)
@@ -308,7 +307,7 @@ class CryptoHeroToken extends StandardNRC721Token {
     }
 }
 
-class Ownerable extends CryptoHeroToken {
+class OwnerableContract extends CryptoHeroToken {
     constructor() {
         super()
         LocalContractStorage.defineProperties(this, {
@@ -343,7 +342,7 @@ class Ownerable extends CryptoHeroToken {
     }        
 }
 
-class CryptoHeroContract extends Ownerable {
+class CryptoHeroContract extends OwnerableContract {
     constructor() {
         super()
         LocalContractStorage.defineProperties(this, {

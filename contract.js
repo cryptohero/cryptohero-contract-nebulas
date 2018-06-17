@@ -346,13 +346,11 @@ class CryptoHeroContract extends OwnerableContract {
     constructor() {
         super()
         LocalContractStorage.defineProperties(this, {
+            drawChances: null,            
             drawPrice: null,
-            owner: null,
-            referCut: null,
-            drawChances: null
+            referCut: null
         })
         LocalContractStorage.defineMapProperties(this, {
-            "admins": null,
             "tokenPrice": {
                 parse(value) {
                     return new BigNumber(value)

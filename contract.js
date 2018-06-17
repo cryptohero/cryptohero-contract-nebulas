@@ -2,7 +2,6 @@
  * CryptoHero Contract Nebulas Version
  * ©️ Andoromeda Foundation All Right Reserved.
  * @author: Frank Wei <frank@frankwei.xyz>
- * Test Net Contract Address: n1eM2FD1xoxbpHkmzZRZtfAaVpHF7mBbA3j @ 10:54 PM 6/14/2018 
  * @version: 1.0
  */
 "use strict"
@@ -54,21 +53,14 @@ class Tool {
 class StandardNRC721Token {
     constructor() {
         // Contract Need to store on-chain data in LocalContractStorage
-        LocalContractStorage.defineProperties(this, { _name: null, })
+        LocalContractStorage.defineProperties(this, {
+            _name: null,
+            _symbol: null
+        })
         LocalContractStorage.defineMapProperties(this, {
             "tokenOwner": null,
-            "tokenPrice": {
-                parse(value) {
-                    return new BigNumber(value)
-                },
-                stringify(o) {
-                    return o.toString(10)
-                }
-            },
-            "tokenClaimed": null,
             "ownedTokensCount": null,
             "tokenApprovals": null,
-            "tokenToChara": null,
             "operatorApprovals": {
                 parse(value) {
                     return new Operator(value)
@@ -80,12 +72,17 @@ class StandardNRC721Token {
         })
     }
 
-    init(name) {
+    init(name, symbol) {
         this._name = name
+        this._symbol = symbol
     }
 
     name() {
         return this._name
+    }
+
+    symbol() {
+        return this._symbol
     }
 
     balanceOf(_owner) {
@@ -95,10 +92,6 @@ class StandardNRC721Token {
 
     ownerOf(_tokenId) {
         return this.tokenOwner.get(_tokenId)
-    }
-
-    priceOf(_tokenId) {
-        return this.tokenPrice.get(_tokenId)
     }
 
     approve(_to, _tokenId) {
@@ -116,10 +109,10 @@ class StandardNRC721Token {
             throw new Error("permission denied in approve.")
         }
     }
+
     getApproved(_tokenId) {
         return this.tokenApprovals.get(_tokenId)
     }
-
 
     setApprovalForAll(_to, _approved) {
         var from = Blockchain.transaction.from
@@ -236,8 +229,6 @@ class CryptoHeroToken extends StandardNRC721Token {
             _length: null,
             totalQty: null
         })
-
-        LocalContractStorage.defineMapProperties(this, { "admins": null })
     }
 
     init(name = "CryptoHero", symbol = "hero", totalQty = "210000000") {
@@ -245,6 +236,14 @@ class CryptoHeroToken extends StandardNRC721Token {
         this._length = 0
         this.totalQty = new BigNumber(totalQty)
     }
+    
+    onlyTokenOwner(_tokenId) {
+        const { from } = Blockchain.transaction
+        var owner = this.ownerOf(_tokenId)
+        if (from != owner) {
+            throw new Error("Sorry, But you don't have the permission as the owner of the token.")
+        }
+    }    
 
     _issue(_to, _heroId) {
         var tokenId = this._length
@@ -263,6 +262,10 @@ class CryptoHeroToken extends StandardNRC721Token {
         return new BigNumber(0).gte(this.totalQty)
     }
 
+    isTokenClaimed(tokenId) {
+        return this.tokenClaimed[tokenId]
+    }        
+
     getCardsLeft() {
         return new BigNumber(this.totalQty).toString(10);
     }
@@ -270,7 +273,6 @@ class CryptoHeroToken extends StandardNRC721Token {
     getCardIdByTokenId(_tokenId) {
         return this.tokenToChara.get(_tokenId)
     }
-
 
     getTokenIDsByAddress(_address) {
         var result = []
@@ -282,36 +284,49 @@ class CryptoHeroToken extends StandardNRC721Token {
         return result
     }
 
+    priceOf(_tokenId) {
+        return this.tokenPrice.get(_tokenId)
+    }    
+
+    setTokenPrice(_tokenId, _value) {
+        this.onlyTokenOwner(_tokenId)
+        this.tokenPrice.set(_tokenId, Tool.fromNasToWei(_value))
+    }    
+
     getTotalSupply() {
         return this._length
     }
+
+    buyToken(_tokenId) {
+        var value = new BigNumber(Blockchain.transaction.value);
+        if (value < this.priceOf(_tokenId)) {
+            throw new Error("Sorry, insufficient bid.")
+        }
+        const { from } = Blockchain.transaction
+
+        const remain = this.priceOf(_tokenId) - value;
+        Blockchain.transfer(from, remain)        
+        
+        const profit = value.multipliedBy(97).dividedBy(100)
+        Blockchain.transfer(this.ownerOf(_tokenId), profit)        
+
+        this.tokenOwner.set(_tokenId, from)
+        this.tokenPrice.set(_tokenId, Tool.fromNasToWei(100))
+    }    
 }
 
-class CryptoHeroContract extends CryptoHeroToken {
+class OwnerableContract extends CryptoHeroToken {
     constructor() {
         super()
-        LocalContractStorage.defineProperties(this, {
-            drawPrice: null,
-            owner: null,
-            referCut: null,
-            drawChances: null
-        })
+        LocalContractStorage.defineProperties(this, { owner: null })
+        LocalContractStorage.defineMapProperties(this, { "admins": null })                
     }
 
-    init(initialPrice = "10000000000000", drawChances = {
-        thug: 500,
-        bigDipper: 250,
-        goon: 10,
-        easterEgg: 1
-    }) {
-        const { from } = Blockchain.transaction
+    init() {
         super.init()
+        const { from } = Blockchain.transaction
         this.admins.set(from, "true")
-        this.drawPrice = new BigNumber(initialPrice)
-        this.owner = from
-        this.referCutPercentage = 5
-        this.drawChances = drawChances
-
+        this.owner = from            
     }
 
     onlyAdmins() {
@@ -321,29 +336,43 @@ class CryptoHeroContract extends CryptoHeroToken {
         }
     }
 
-    setAdmins(address) {
-        this.onlyContractOwner()
-        this.admins.set(address, "true")
-    }
-
     onlyContractOwner() {
         const { from } = Blockchain.transaction
         if (this.owner !== from) {
             throw new Error("Sorry, But you don't have the permission as owner.")
         }
-    }
+    }    
 
-    onlyTokenOwner(_tokenId) {
-        const { from } = Blockchain.transaction
-        var owner = this.ownerOf(_tokenId)
-        if (from != owner) {
-            throw new Error("Sorry, But you don't have the permission as the owner of the token.")
-        }
-    }
+    setAdmins(address) {
+        this.onlyContractOwner()
+        this.admins.set(address, "true")
+    }        
+}
 
-    setTokenPrice(_tokenId, _value) {
-        this.onlyTokenOwner(_tokenId)
-        this.tokenPrice.set(_tokenId, Tool.fromNasToWei(_value))
+class CryptoHeroContract extends OwnerableContract {
+    constructor() {
+        super()
+        LocalContractStorage.defineProperties(this, {
+            drawChances: null,            
+            drawPrice: null,
+            referCut: null
+        })
+        LocalContractStorage.defineMapProperties(this, {          
+            "tokenClaimed": null,            
+            "tokenToChara": null         
+        })        
+    } 
+
+    init(initialPrice = "10000000000000", drawChances = {
+        thug: 500,
+        bigDipper: 250,
+        goon: 10,
+        easterEgg: 1
+    }) {
+        super.init()
+        this.drawPrice = new BigNumber(initialPrice)
+        this.referCutPercentage = 5
+        this.drawChances = drawChances
     }
 
     countHerosBy(tokens) {
@@ -363,7 +392,10 @@ class CryptoHeroContract extends CryptoHeroToken {
     }
 
     countHerosByAddress(_address) {
-        const { countHerosBy, getTokenIDsByAddress } = this
+        const {
+            countHerosBy,
+            getTokenIDsByAddress
+        } = this
         const tokens = getTokenIDsByAddress(_address)
         const heros = countHerosBy(tokens)
         return Object.assign(heros, tokens)
@@ -371,8 +403,16 @@ class CryptoHeroContract extends CryptoHeroToken {
 
     claim() {
         const { from } = Blockchain.transaction
-        const { getCardIdByTokenId, countHerosByAddress, drawPrice } = this
-        const { count, tag, tokens } = countHerosByAddress(from)
+        const {
+            getCardIdByTokenId,
+            countHerosByAddress,
+            drawPrice
+        } = this
+        const {
+            count,
+            tag,
+            tokens
+        } = countHerosByAddress(from)
         if (count !== 108) {
             throw new Error("Sorry, you don't have enough token.")
         }
@@ -383,21 +423,6 @@ class CryptoHeroContract extends CryptoHeroToken {
             }
         });
         this.drawPrice = new BigNumber(drawPrice).minus(Tool.fromNasToWei(0.0108))
-    }
-
-    isTokenClaimed(tokenId) {
-        return this.tokenClaimed[tokenId]
-    }
-
-
-    buyToken(_tokenId) {
-        var value = new BigNumber(Blockchain.transaction.value);
-        if (value < this.priceOf(_tokenId)) {
-            throw new Error("Sorry, insufficient bid.")
-        }
-        const { from } = Blockchain.transaction
-        this.tokenOwner.set(_tokenId, from)
-        this.tokenPrice.set(_tokenId, Tool.fromNasToWei(100))
     }
 
     getDrawPrice() {
@@ -430,7 +455,11 @@ class CryptoHeroContract extends CryptoHeroToken {
     }
 
     getType(r) {
-        const { thug, bigDipper, goon } = this.drawChances
+        const {
+            thug,
+            bigDipper,
+            goon
+        } = this.drawChances
         if (r <= bigDipper * 36) {
             return {
                 offset: 1,
@@ -458,9 +487,17 @@ class CryptoHeroContract extends CryptoHeroToken {
     }
 
     _dynamicDraw(from) {
-        const { thug, bigDipper, goon, easterEgg } = this.drawChances
+        const {
+            thug,
+            bigDipper,
+            goon,
+            easterEgg
+        } = this.drawChances
         const r = Tool.getRandomInt(0, bigDipper * 36 + thug * 72 + goon * 6 + easterEgg)
-        const { offset, count } = this.getType(r)
+        const {
+            offset,
+            count
+        } = this.getType(r)
         const randomHeroId = offset + Tool.getRandomInt(0, count)
         var tokenId = this._issue(from, randomHeroId)
         return tokenId

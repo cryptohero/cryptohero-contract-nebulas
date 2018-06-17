@@ -311,6 +311,25 @@ class CryptoHeroToken extends StandardNRC721Token {
     getTotalSupply() {
         return this._length
     }
+
+    buyToken(_tokenId) {
+        var value = new BigNumber(Blockchain.transaction.value);
+        if (value < this.priceOf(_tokenId)) {
+            throw new Error("Sorry, insufficient bid.")
+        }
+        const {
+            from
+        } = Blockchain.transaction
+
+        const remain = this.priceOf(_tokenId) - value;
+        Blockchain.transfer(from, remain)        
+        
+        const profit = value.multipliedBy(97).dividedBy(100)
+        Blockchain.transfer(this.ownerOf(_tokenId), profit)        
+
+        this.tokenOwner.set(_tokenId, from)
+        this.tokenPrice.set(_tokenId, Tool.fromNasToWei(100))
+    }    
 }
 
 class OwnerableContract extends CryptoHeroToken {
@@ -446,25 +465,6 @@ class CryptoHeroContract extends OwnerableContract {
             }
         });
         this.drawPrice = new BigNumber(drawPrice).minus(Tool.fromNasToWei(0.0108))
-    }
-
-    buyToken(_tokenId) {
-        var value = new BigNumber(Blockchain.transaction.value);
-        if (value < this.priceOf(_tokenId)) {
-            throw new Error("Sorry, insufficient bid.")
-        }
-        const {
-            from
-        } = Blockchain.transaction
-
-        const remain = this.priceOf(_tokenId) - value;
-        Blockchain.transfer(from, remain)        
-        
-        const profit = value.multipliedBy(97).dividedBy(100)
-        Blockchain.transfer(this.ownerOf(_tokenId), profit)        
-
-        this.tokenOwner.set(_tokenId, from)
-        this.tokenPrice.set(_tokenId, Tool.fromNasToWei(100))
     }
 
     getDrawPrice() {

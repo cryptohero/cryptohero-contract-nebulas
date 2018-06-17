@@ -58,14 +58,6 @@ class StandardNRC721Token {
         })
         LocalContractStorage.defineMapProperties(this, {
             "tokenOwner": null,
-            "tokenPrice": {
-                parse(value) {
-                    return new BigNumber(value)
-                },
-                stringify(o) {
-                    return o.toString(10)
-                }
-            },
             "ownedTokensCount": null,
             "tokenApprovals": null,
             "operatorApprovals": {
@@ -94,10 +86,6 @@ class StandardNRC721Token {
 
     ownerOf(_tokenId) {
         return this.tokenOwner.get(_tokenId)
-    }
-
-    priceOf(_tokenId) {
-        return this.tokenPrice.get(_tokenId)
     }
 
     approve(_to, _tokenId) {
@@ -238,6 +226,14 @@ class CryptoHeroToken extends StandardNRC721Token {
 
         LocalContractStorage.defineMapProperties(this, {
             "admins": null,
+            "tokenPrice": {
+                parse(value) {
+                    return new BigNumber(value)
+                },
+                stringify(o) {
+                    return o.toString(10)
+                }
+            },            
             "tokenClaimed": null,            
             "tokenToChara": null         
         })
@@ -248,6 +244,16 @@ class CryptoHeroToken extends StandardNRC721Token {
         this._length = 0
         this.totalQty = new BigNumber(totalQty)
     }
+    
+    onlyTokenOwner(_tokenId) {
+        const {
+            from
+        } = Blockchain.transaction
+        var owner = this.ownerOf(_tokenId)
+        if (from != owner) {
+            throw new Error("Sorry, But you don't have the permission as the owner of the token.")
+        }
+    }    
 
     _issue(_to, _heroId) {
         var tokenId = this._length
@@ -288,37 +294,29 @@ class CryptoHeroToken extends StandardNRC721Token {
         return result
     }
 
+    priceOf(_tokenId) {
+        return this.tokenPrice.get(_tokenId)
+    }    
+
+    setTokenPrice(_tokenId, _value) {
+        this.onlyTokenOwner(_tokenId)
+        this.tokenPrice.set(_tokenId, Tool.fromNasToWei(_value))
+    }    
+
     getTotalSupply() {
         return this._length
     }
 }
 
-class CryptoHeroContract extends CryptoHeroToken {
+class Ownerable extends CryptoHeroToken {
     constructor() {
         super()
         LocalContractStorage.defineProperties(this, {
-            drawPrice: null,
             owner: null,
-            referCut: null,
-            drawChances: null
         })
-    }
-
-    init(initialPrice = "10000000000000", drawChances = {
-        thug: 500,
-        bigDipper: 250,
-        goon: 10,
-        easterEgg: 1
-    }) {
-        const {
-            from
-        } = Blockchain.transaction
-        super.init()
-        this.admins.set(from, "true")
-        this.drawPrice = new BigNumber(initialPrice)
-        this.owner = from
-        this.referCutPercentage = 5
-        this.drawChances = drawChances
+        LocalContractStorage.defineMapProperties(this, {
+            "admins": null
+        })                
     }
 
     onlyAdmins() {
@@ -337,26 +335,53 @@ class CryptoHeroContract extends CryptoHeroToken {
         if (this.owner !== from) {
             throw new Error("Sorry, But you don't have the permission as owner.")
         }
-    }
-
-    onlyTokenOwner(_tokenId) {
-        const {
-            from
-        } = Blockchain.transaction
-        var owner = this.ownerOf(_tokenId)
-        if (from != owner) {
-            throw new Error("Sorry, But you don't have the permission as the owner of the token.")
-        }
-    }
+    }    
 
     setAdmins(address) {
         this.onlyContractOwner()
         this.admins.set(address, "true")
-    }    
+    }        
+}
 
-    setTokenPrice(_tokenId, _value) {
-        this.onlyTokenOwner(_tokenId)
-        this.tokenPrice.set(_tokenId, Tool.fromNasToWei(_value))
+class CryptoHeroContract extends Ownerable {
+    constructor() {
+        super()
+        LocalContractStorage.defineProperties(this, {
+            drawPrice: null,
+            owner: null,
+            referCut: null,
+            drawChances: null
+        })
+        LocalContractStorage.defineMapProperties(this, {
+            "admins": null,
+            "tokenPrice": {
+                parse(value) {
+                    return new BigNumber(value)
+                },
+                stringify(o) {
+                    return o.toString(10)
+                }
+            },            
+            "tokenClaimed": null,            
+            "tokenToChara": null         
+        })        
+    }
+
+    init(initialPrice = "10000000000000", drawChances = {
+        thug: 500,
+        bigDipper: 250,
+        goon: 10,
+        easterEgg: 1
+    }) {
+        const {
+            from
+        } = Blockchain.transaction
+        super.init()
+        this.admins.set(from, "true")
+        this.drawPrice = new BigNumber(initialPrice)
+        this.owner = from
+        this.referCutPercentage = 5
+        this.drawChances = drawChances
     }
 
     countHerosBy(tokens) {

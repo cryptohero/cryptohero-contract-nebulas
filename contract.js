@@ -238,9 +238,7 @@ class CryptoHeroToken extends StandardNRC721Token {
     }
     
     onlyTokenOwner(_tokenId) {
-        const {
-            from
-        } = Blockchain.transaction
+        const { from } = Blockchain.transaction
         var owner = this.ownerOf(_tokenId)
         if (from != owner) {
             throw new Error("Sorry, But you don't have the permission as the owner of the token.")
@@ -304,9 +302,7 @@ class CryptoHeroToken extends StandardNRC721Token {
         if (value < this.priceOf(_tokenId)) {
             throw new Error("Sorry, insufficient bid.")
         }
-        const {
-            from
-        } = Blockchain.transaction
+        const { from } = Blockchain.transaction
 
         const remain = this.priceOf(_tokenId) - value;
         Blockchain.transfer(from, remain)        
@@ -322,36 +318,26 @@ class CryptoHeroToken extends StandardNRC721Token {
 class OwnerableContract extends CryptoHeroToken {
     constructor() {
         super()
-        LocalContractStorage.defineProperties(this, {
-            owner: null,
-        })
-        LocalContractStorage.defineMapProperties(this, {
-            "admins": null
-        })                
+        LocalContractStorage.defineProperties(this, { owner: null })
+        LocalContractStorage.defineMapProperties(this, { "admins": null })                
     }
 
     init() {
         super.init()
-        const {
-            from
-        } = Blockchain.transaction
+        const { from } = Blockchain.transaction
         this.admins.set(from, "true")
         this.owner = from            
     }
 
     onlyAdmins() {
-        const {
-            from
-        } = Blockchain.transaction
+        const { from } = Blockchain.transaction
         if (!this.admins.get(from)) {
             throw new Error("Sorry, You don't have the permission as admins.")
         }
     }
 
     onlyContractOwner() {
-        const {
-            from
-        } = Blockchain.transaction
+        const { from } = Blockchain.transaction
         if (this.owner !== from) {
             throw new Error("Sorry, But you don't have the permission as owner.")
         }
@@ -384,18 +370,13 @@ class CryptoHeroContract extends OwnerableContract {
         easterEgg: 1
     }) {
         super.init()
-        const {
-            from
-        } = Blockchain.transaction
         this.drawPrice = new BigNumber(initialPrice)
         this.referCutPercentage = 5
         this.drawChances = drawChances
     }
 
     countHerosBy(tokens) {
-        const {
-            getCardIdByTokenId
-        } = this
+        const { getCardIdByTokenId } = this
         var tag = []
         var count = 0
         for (const i in tokens) {
@@ -421,9 +402,7 @@ class CryptoHeroContract extends OwnerableContract {
     }
 
     claim() {
-        const {
-            from
-        } = Blockchain.transaction
+        const { from } = Blockchain.transaction
         const {
             getCardIdByTokenId,
             countHerosByAddress,

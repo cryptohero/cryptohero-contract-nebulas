@@ -227,6 +227,10 @@ class CryptoHeroToken extends StandardNRC721Token {
             _length: null,
             totalQty: null
         })
+        LocalContractStorage.defineMapProperties(this, {          
+            "tokenPrice": null,            
+            "tokenToChara": null         
+        })               
     }
 
     init(name = "CryptoHero", symbol = "hero", totalQty = "210000000") {
@@ -250,7 +254,7 @@ class CryptoHeroToken extends StandardNRC721Token {
             var tokenId = this._length
             this._mint(_to, tokenId)
             this.tokenToChara.set(tokenId, _heroId)
-            this.tokenPrice.set(_tokenId, Tool.fromNasToWei(100))            
+            this.tokenPrice.set(tokenId, Tool.fromNasToWei(100))            
             this._length += 1;
             return tokenId
         }
@@ -356,8 +360,7 @@ class CryptoHeroContract extends OwnerableContract {
             referCut: null
         })
         LocalContractStorage.defineMapProperties(this, {          
-            "tokenClaimed": null,            
-            "tokenToChara": null         
+            "tokenClaimed": null           
         })        
     } 
 

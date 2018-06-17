@@ -318,6 +318,15 @@ class OwnerableContract extends CryptoHeroToken {
         })                
     }
 
+    init() {
+        super.init()
+        const {
+            from
+        } = Blockchain.transaction
+        this.admins.set(from, "true")
+        this.owner = from            
+    }
+
     onlyAdmins() {
         const {
             from
@@ -362,7 +371,7 @@ class CryptoHeroContract extends OwnerableContract {
             "tokenClaimed": null,            
             "tokenToChara": null         
         })        
-    }
+    } 
 
     init(initialPrice = "10000000000000", drawChances = {
         thug: 500,
@@ -370,13 +379,11 @@ class CryptoHeroContract extends OwnerableContract {
         goon: 10,
         easterEgg: 1
     }) {
+        super.init()
         const {
             from
         } = Blockchain.transaction
-        super.init()
-        this.admins.set(from, "true")
         this.drawPrice = new BigNumber(initialPrice)
-        this.owner = from
         this.referCutPercentage = 5
         this.drawChances = drawChances
     }

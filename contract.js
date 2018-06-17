@@ -253,6 +253,7 @@ class CryptoHeroToken extends StandardNRC721Token {
         } else {
             var tokenId = this._length
             this._mint(_to, tokenId)
+            this.totalQty = new BigNumber(this.totalQty).minus(1);            
             this.tokenToChara.set(tokenId, _heroId)
             this.tokenPrice.set(tokenId, Tool.fromNasToWei(100))            
             this._length += 1;
@@ -309,7 +310,7 @@ class CryptoHeroToken extends StandardNRC721Token {
         const remain = this.priceOf(_tokenId) - value;
         Blockchain.transfer(from, remain)        
         
-        const profit = value.multipliedBy(97).dividedBy(100)
+        const profit = value.times(97).div(100)
         Blockchain.transfer(this.ownerOf(_tokenId), profit)        
 
         this.tokenOwner.set(_tokenId, from)

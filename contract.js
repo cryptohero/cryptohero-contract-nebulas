@@ -176,14 +176,12 @@ class StandardNRC721Token {
             throw new Error("Insufficient account balance in removeTokenFrom.")
         }
         this.tokenOwner.delete(_tokenId)
-        this.tokenPrice.delete(_tokenId)
         this.ownedTokensCount.set(_from, tokenCount - 1)
     }
 
     // These function can be directly called without underscore in the first letter
     _addTokenTo(_to, _tokenId) {
         this.tokenOwner.set(_tokenId, _to)
-        this.tokenPrice.set(_tokenId, Tool.fromNasToWei(100))
         var tokenCount = this.ownedTokensCount.get(_to) || 0
         this.ownedTokensCount.set(_to, tokenCount + 1)
     }
@@ -246,13 +244,13 @@ class CryptoHeroToken extends StandardNRC721Token {
     }    
 
     _issue(_to, _heroId) {
-        var tokenId = this._length
         if (this.isSoldOut()) {
             throw new Error("Sorry, the card pool is empty now.")
         } else {
+            var tokenId = this._length
             this._mint(_to, tokenId)
             this.tokenToChara.set(tokenId, _heroId)
-            this.totalQty = new BigNumber(this.totalQty).minus(1);
+            this.tokenPrice.set(_tokenId, Tool.fromNasToWei(100))            
             this._length += 1;
             return tokenId
         }

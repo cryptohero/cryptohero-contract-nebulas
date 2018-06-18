@@ -376,15 +376,21 @@ class CryptoHeroContract extends OwnerableContract {
     }
 
     countHerosBy(tokens) {
-        const { getCardIdByTokenId } = this
         var tag = []
         var count = 0
-        for (const i in tokens) {
-            if (tag[getCardIdByTokenId(i)] == false) {
+        tokens.forEach((token) => {
+            const chara = this.tokenToChara.get(token)
+            if (tag[chara] == false) {
                 count += 1
-                tag[getCardIdByTokenId(i)] = true
+                tag[chara] = true
             }
-        }
+        })
+        // for (const i in tokens) {
+        //     if (tag[getCardIdByTokenId(i)] == false) {
+        //         count += 1
+        //         tag[getCardIdByTokenId(i)] = true
+        //     }
+        // }
         return {
             count,
             tag
@@ -392,33 +398,26 @@ class CryptoHeroContract extends OwnerableContract {
     }
 
     countHerosByAddress(_address) {
-        const {
-            countHerosBy,
-            getTokenIDsByAddress
-        } = this
-        const tokens = getTokenIDsByAddress(_address)
-        const heros = countHerosBy(tokens)
-        return Object.assign(heros, tokens)
+        const tokens = this.getTokenIDsByAddress(_address)
+        const heros = this.countHerosBy(tokens)
+        return Object.assign(heros, { tokens })
     }
 
     claim() {
         const { from } = Blockchain.transaction
-        const {
-            getCardIdByTokenId,
-            countHerosByAddress,
-            drawPrice
-        } = this
+        const { drawPrice } = this
         const {
             count,
             tag,
             tokens
-        } = countHerosByAddress(from)
+        } = this.countHerosByAddress(from)
         if (count !== 108) {
             throw new Error("Sorry, you don't have enough token.")
         }
 
         tokens.forEach((tokenId) => {
-            if (tag[getCardIdByTokenId(tokenId)]) {
+            const chara = this.tokenToChara.get(tokenId)
+            if (tag[chara]) {
                 this.tokenClaimed[tokenId] = true
             }
         });

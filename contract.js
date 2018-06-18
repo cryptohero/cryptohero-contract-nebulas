@@ -360,9 +360,7 @@ class CryptoHeroContract extends OwnerableContract {
             drawPrice: null,
             referCut: null
         })
-        LocalContractStorage.defineMapProperties(this, {          
-            "tokenClaimed": null           
-        })        
+        LocalContractStorage.defineMapProperties(this, { "tokenClaimed": null })        
     } 
 
     init(initialPrice = "10000000000000", drawChances = {
@@ -373,7 +371,7 @@ class CryptoHeroContract extends OwnerableContract {
     }) {
         super.init()
         this.drawPrice = new BigNumber(initialPrice)
-        this.referCutPercentage = 5
+        this.referCut = new BigNumber(5)
         this.drawChances = drawChances
     }
 
@@ -442,7 +440,7 @@ class CryptoHeroContract extends OwnerableContract {
         if (value > 100) {
             throw new Error("Refer Percentage above 100 is ridiculous, we are not selling for lost")
         } else {
-            this.referCutPercentage = value
+            this.referCut = new BigNumber(value)
         }
     }
 
@@ -453,7 +451,7 @@ class CryptoHeroContract extends OwnerableContract {
     }
 
     getReferPercentage() {
-        return this.referCutPercentage
+        return this.referCut
     }
 
     getType(r) {
@@ -517,6 +515,10 @@ class CryptoHeroContract extends OwnerableContract {
         return resultArray
     }
 
+    checkParameter(pr1) {
+        return pr1
+    }
+
     draw(referer) {
         var {
             from,
@@ -524,14 +526,15 @@ class CryptoHeroContract extends OwnerableContract {
         } = Blockchain.transaction
         const {
             drawPrice,
-            referCutPercentage
+            referCut
         } = this
         const qty = value.dividedToIntegerBy(drawPrice)
         if (value.gt(0)) {
             const result = this._issueMultipleCard(from, qty)
             if (referer !== "") {
-                const referCut = value.dividedToIntegerBy(100 / referCutPercentage)
-                Blockchain.transfer(referer, referCut)
+                const withoutCut = new BigNumber(100).dividedToIntegerBy(referCut)
+                // const referCut = value.dividedToIntegerBy(100 / referCut)
+                Blockchain.transfer(referer, value.dividedToIntegerBy(withoutCut))
             }
             return result
         } else {

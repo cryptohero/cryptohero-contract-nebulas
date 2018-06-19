@@ -393,11 +393,11 @@ class CryptoHeroContract extends OwnerableContract {
     }
 
     countHerosBy(tokens) {
-        var tag = []
+        var tag = {}
         var count = 0
         tokens.forEach((token) => {
             const chara = this.tokenToChara.get(token)
-            if (tag[chara] == false) {
+            if (tag[chara] == undefined) {
                 count += 1
                 tag[chara] = true
             }
@@ -438,7 +438,9 @@ class CryptoHeroContract extends OwnerableContract {
                 this.tokenClaimed[tokenId] = true
             }
         });
-        this.drawPrice = new BigNumber(drawPrice).minus(Tool.fromNasToWei(0.0108))
+        if ( new BigNumber(drawPrice) > (Tool.fromNasToWei(0.0109)) ) {
+            this.drawPrice = new BigNumber(drawPrice).minus(Tool.fromNasToWei(0.0108))
+        }
     }
 
    

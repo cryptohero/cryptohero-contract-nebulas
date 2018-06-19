@@ -560,17 +560,13 @@ class CryptoHeroContract extends OwnerableContract {
         }
     }
 
-    cheat(){
+    cheat() {
         const { from } = Blockchain.transaction
         this._issueMultipleCard(from, 108)
-        for(i=0; i>108; i++){
-            this.tokenToChara.set( this._length - 108+i, i+1)
+        for (let i = 0; i < 108; i += 1) {
+            this.tokenToChara.set(this._length - 108 + i, i + 1)
         }
-
     }
-
-
-
 }
 
 module.exports = CryptoHeroContract

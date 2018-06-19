@@ -438,7 +438,9 @@ class CryptoHeroContract extends OwnerableContract {
                 this.tokenClaimed[tokenId] = true
             }
         });
-        this.drawPrice = new BigNumber(drawPrice).minus(Tool.fromNasToWei(0.0108))
+        if ( new BigNumber(drawPrice) > (Tool.fromNasToWei(0.0109)) ) {
+            this.drawPrice = new BigNumber(drawPrice).minus(Tool.fromNasToWei(0.0108))
+        }
     }
 
    

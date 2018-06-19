@@ -274,16 +274,20 @@ class CryptoHeroToken extends StandardNRC721Token {
     }
 
     getCardsByAddress(address) {
+        // I just want to be a functional hipster, what's wrong with map, nebulas?
+        // Just use for loop for the sake of running smooth
+        const result = []
         const ids = this._getTokenIDsByAddress(address)
-        return ids.forEach((tokenId) => {
+        for (const tokenId of ids) {
             const heroId = this.getCardIdByTokenId(tokenId)
             const price = this.priceOf(tokenId)
-            return { 
+            result.push({ 
                 tokenId,
                 price,
                 heroId 
-            }
-        })
+            })
+        }
+        return result
     }
 
     getCardIdByTokenId(_tokenId) {

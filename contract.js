@@ -447,7 +447,7 @@ class CryptoHeroContract extends OwnerableContract {
         tokens.forEach((tokenId) => {
             const chara = this.tokenToChara.get(tokenId)
             if (tag[chara] == true && chara >= 1 && chara <= 108) {
-                this.tokenClaimed[tokenId] = true
+                this.tokenClaimed.set(tokenId, true)
             }
         });
         this.drawPrice = new BigNumber(drawPrice).minus(Tool.fromNasToWei(0.00000000108))        

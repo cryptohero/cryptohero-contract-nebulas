@@ -273,11 +273,24 @@ class CryptoHeroToken extends StandardNRC721Token {
         return new BigNumber(this.totalQty).toString(10);
     }
 
+    getCardsByAddress(address) {
+        const ids = this._getTokenIDsByAddress(address)
+        return ids.forEach((tokenId) => {
+            const heroId = this.getCardIdByTokenId(tokenId)
+            const price = this.priceOf(tokenId)
+            return { 
+                tokenId,
+                price,
+                heroId 
+            }
+        })
+    }
+
     getCardIdByTokenId(_tokenId) {
         return this.tokenToChara.get(_tokenId)
     }
 
-    getTokenIDsByAddress(_address) {
+    _getTokenIDsByAddress(_address) {
         var result = []
         for (let id = 0; id < this._length; id += 1) {
             if (this.ownerOf(id) === _address) {
@@ -398,7 +411,7 @@ class CryptoHeroContract extends OwnerableContract {
     }
 
     countHerosByAddress(_address) {
-        const tokens = this.getTokenIDsByAddress(_address)
+        const tokens = this._getTokenIDsByAddress(_address)
         const heros = this.countHerosBy(tokens)
         return Object.assign(heros, { tokens })
     }

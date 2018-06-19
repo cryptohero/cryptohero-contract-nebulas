@@ -394,11 +394,19 @@ class CryptoHeroContract extends OwnerableContract {
 
     countHerosBy(tokens) {
         var tag = {}
-        var count = 0
+        var countHero = 0
+        var countEvil = 0
+        var countGod = 0
         tokens.forEach((token) => {
             const chara = this.tokenToChara.get(token)
             if (tag[chara] == undefined) {
-                count += 1
+                if (chara >= 1 && chara <= 108) {
+                    countHero += 1
+                } else if (chara == 0) {
+                    countGod += 1
+                } else {
+                    countEvil += 1
+                }                
                 tag[chara] = true
             }
         })
@@ -409,7 +417,9 @@ class CryptoHeroContract extends OwnerableContract {
         //     }
         // }
         return {
-            count,
+            countHero,
+            countEvil,
+            countGod,
             tag
         }
     }
@@ -424,23 +434,23 @@ class CryptoHeroContract extends OwnerableContract {
         const { from } = Blockchain.transaction
         const { drawPrice } = this
         const {
-            count,
+            countHero,
+            countEvil,
+            countGod,
             tag,
             tokens
         } = this.countHerosByAddress(from)
-        if (count !== 108) {
+        if (countHero !== 108) {
             throw new Error("Sorry, you don't have enough token.")
         }
 
         tokens.forEach((tokenId) => {
             const chara = this.tokenToChara.get(tokenId)
-            if (tag[chara]) {
+            if (tag[chara] && chara >= 1 && chara <= 108) {
                 this.tokenClaimed[tokenId] = true
             }
         });
-        if ( new BigNumber(drawPrice) > (Tool.fromNasToWei(0.0109)) ) {
-            this.drawPrice = new BigNumber(drawPrice).minus(Tool.fromNasToWei(0.0108))
-        }
+        this.drawPrice = new BigNumber(drawPrice).minus(Tool.fromNasToWei(0.00000000108))        
     }
 
    

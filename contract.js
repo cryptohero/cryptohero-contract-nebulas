@@ -266,7 +266,7 @@ class CryptoHeroToken extends StandardNRC721Token {
     }
 
     isTokenClaimed(tokenId) {
-        return this.tokenClaimed[tokenId]
+        return this.tokenClaimed.get(tokenId)
     }        
 
     getCardsLeft() {

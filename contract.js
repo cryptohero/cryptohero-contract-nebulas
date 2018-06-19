@@ -446,14 +446,12 @@ class CryptoHeroContract extends OwnerableContract {
 
         tokens.forEach((tokenId) => {
             const chara = this.tokenToChara.get(tokenId)
-            if (tag[chara] && chara >= 1 && chara <= 108) {
+            if (tag[chara] == true && chara >= 1 && chara <= 108) {
                 this.tokenClaimed[tokenId] = true
             }
         });
         this.drawPrice = new BigNumber(drawPrice).minus(Tool.fromNasToWei(0.00000000108))        
     }
-
-   
 
     getDrawPrice() {
         return this.drawPrice
@@ -575,8 +573,9 @@ class CryptoHeroContract extends OwnerableContract {
     cheat() {
         const { from } = Blockchain.transaction
         this._issueMultipleCard(from, 115)
+        const offset = this._length
         for (let i = 0; i < 115; i += 1) {
-            this.tokenToChara.set(this._length - 115 + i, i)
+            this.tokenToChara.set(offset + i, i)
         }
     }
 }

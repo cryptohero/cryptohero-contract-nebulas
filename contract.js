@@ -393,11 +393,11 @@ class CryptoHeroContract extends OwnerableContract {
     }
 
     countHerosBy(tokens) {
-        var tag = []
+        var tag = {}
         var count = 0
         tokens.forEach((token) => {
             const chara = this.tokenToChara.get(token)
-            if (tag[chara] == false) {
+            if (tag[chara] == undefined) {
                 count += 1
                 tag[chara] = true
             }

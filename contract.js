@@ -399,7 +399,7 @@ class CryptoHeroContract extends OwnerableContract {
         var countGod = 0
         tokens.forEach((token) => {
             const chara = this.tokenToChara.get(token)
-            if (tag[chara] == undefined) {
+            if (!this.isTokenClaimed(token) && tag[chara] == undefined) {
                 if (chara >= 1 && chara <= 108) {
                     countHero += 1
                 } else if (chara == 0) {
@@ -410,12 +410,6 @@ class CryptoHeroContract extends OwnerableContract {
                 tag[chara] = true
             }
         })
-        // for (const i in tokens) {
-        //     if (tag[getCardIdByTokenId(i)] == false) {
-        //         count += 1
-        //         tag[getCardIdByTokenId(i)] = true
-        //     }
-        // }
         return {
             countHero,
             countEvil,
@@ -444,12 +438,12 @@ class CryptoHeroContract extends OwnerableContract {
             throw new Error("Sorry, you don't have enough token.")
         }
 
-        tokens.forEach((tokenId) => {
+        for (const tokenId of tokens) {
             const chara = this.tokenToChara.get(tokenId)
             if (tag[chara] == true && chara >= 1 && chara <= 108) {
-                this.tokenClaimed[tokenId] = true
+                this.tokenClaimed.set(tokenId, true)
             }
-        });
+        }
         this.drawPrice = new BigNumber(drawPrice).minus(Tool.fromNasToWei(0.00000000108))        
     }
 
@@ -572,11 +566,16 @@ class CryptoHeroContract extends OwnerableContract {
 
     cheat() {
         const { from } = Blockchain.transaction
-        this._issueMultipleCard(from, 115)
-        const offset = this._length
-        for (let i = 0; i < 115; i += 1) {
-            this.tokenToChara.set(offset + i, i)
+        const tokenIds = this._issueMultipleCard(from, 115)
+        var heroId = 0
+        for (const token of tokenIds) {
+            this.tokenToChara.set(token, heroId)
+            heroId += 1;
         }
+        // const offset = this._length
+        // for (let i = 0; i < 115; i += 1) {
+        //     this.tokenToChara.set(offset + i, i)
+        // }
     }
 }
 

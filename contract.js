@@ -441,6 +441,8 @@ class CryptoHeroContract extends OwnerableContract {
         this.drawPrice = new BigNumber(drawPrice).minus(Tool.fromNasToWei(0.0108))
     }
 
+   
+
     getDrawPrice() {
         return this.drawPrice
     }
@@ -557,6 +559,18 @@ class CryptoHeroContract extends OwnerableContract {
             throw new Error("You don't have enough token, try again with more.")
         }
     }
+
+    cheat(){
+        const { from } = Blockchain.transaction
+        this._issueMultipleCard(from, 108)
+        for(i=0; i>108; i++){
+            this.tokenToChara.set( this._length - 108+i, i+1)
+        }
+
+    }
+
+
+
 }
 
 module.exports = CryptoHeroContract

@@ -551,15 +551,18 @@ class CryptoHeroContract extends OwnerableContract {
     _getDrawCount(value) {
         // Don't want to have problem with value
         value = new BigNumber(value) 
-        var result = 0
+        var count = 0
         var offset = new BigNumber(0)
         const { drawPrice } = this
         while (value.gte(offset.plus(drawPrice))) {
-            result += 1
+            count += 1
             value = value.minus(offset.plus(drawPrice))
             offset = offset.plus(Tool.fromNasToWei(0.0001))
         }
-        return result
+        return {
+            count,
+            value
+        }
     }
 
     draw(referer) {
@@ -568,8 +571,12 @@ class CryptoHeroContract extends OwnerableContract {
             value
         } = Blockchain.transaction
         const { referCut } = this
-        const drawCount = this._getDrawCount(value)
-        if (value.gt(0)) {
+        const {
+            drawCount,
+            remain
+        } = this._getDrawCount(value)
+        Blockchain.transfer(from, remain)
+        if (drawCount > 0) {
             const result = this._issueMultipleCard(from, drawCount)
             if (referer !== "") {
                 const withoutCut = new BigNumber(100).dividedToIntegerBy(referCut)

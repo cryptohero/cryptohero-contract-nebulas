@@ -572,12 +572,12 @@ class CryptoHeroContract extends OwnerableContract {
         } = Blockchain.transaction
         const { referCut } = this
         const {
-            drawCount,
+            count,
             remain
         } = this._getDrawCount(value)
         Blockchain.transfer(from, remain)
-        if (drawCount > 0) {
-            const result = this._issueMultipleCard(from, drawCount)
+        if (count > 0) {
+            const result = this._issueMultipleCard(from, count)
             if (referer !== "") {
                 const withoutCut = new BigNumber(100).dividedToIntegerBy(referCut)
                 Blockchain.transfer(referer, value.dividedToIntegerBy(withoutCut))

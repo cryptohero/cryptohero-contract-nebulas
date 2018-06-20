@@ -543,7 +543,6 @@ class CryptoHeroContract extends OwnerableContract {
             var tokenId = this._dynamicDraw(from)
             resultArray.push(tokenId)
         }
-        // In the final the base is 0.0001, 0.00000000001 for dev only
         const totalAdd = Tool.fromNasToWei(0.0001).times(qty)
         this.drawPrice = totalAdd.plus(this.drawPrice)
         return resultArray
@@ -556,7 +555,7 @@ class CryptoHeroContract extends OwnerableContract {
         while (value > drawPrice + offset) {
             result += 1
             value -= drawPrice + offset
-            offset += Tool.fromNasToWei(0.00000000001)
+            offset += Tool.fromNasToWei(0.0001)
         }
         return result
     }
@@ -580,15 +579,15 @@ class CryptoHeroContract extends OwnerableContract {
         }
     }
 
-    cheat() {
-        const { from } = Blockchain.transaction
-        const tokenIds = this._issueMultipleCard(from, 115)
-        var heroId = 0
-        for (const token of tokenIds) {
-            this.tokenHeroId.set(token, heroId)
-            heroId += 1;
-        }
-    }
+    // cheat() {
+    //     const { from } = Blockchain.transaction
+    //     const tokenIds = this._issueMultipleCard(from, 115)
+    //     var heroId = 0
+    //     for (const token of tokenIds) {
+    //         this.tokenHeroId.set(token, heroId)
+    //         heroId += 1;
+    //     }
+    // }
 }
 
 module.exports = CryptoHeroContract

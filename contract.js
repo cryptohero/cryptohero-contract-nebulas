@@ -427,7 +427,6 @@ class CryptoHeroContract extends OwnerableContract {
 
     claim() {
         const { from } = Blockchain.transaction
-        const { drawPrice } = this
         const {
             countHero,
             countEvil,
@@ -445,7 +444,19 @@ class CryptoHeroContract extends OwnerableContract {
                 this.tokenClaimed.set(tokenId, true)
             }
         }
-        this.drawPrice = new BigNumber(drawPrice).minus(Tool.fromNasToWei(0.0108))        
+        this.claimEvent(true, from, tokens)
+        this.drawPrice = new BigNumber(this.drawPrice).minus(Tool.fromNasToWei(0.0108)) 
+    }
+
+    // status should be boolean
+    claimEvent(status, from, claimedTokens) {
+        Event.Trigger(this.name(), {
+            Status: status,
+            Transfer: {
+                from,
+                claimedTokens 
+            }
+        })
     }
 
     getDrawPrice() {

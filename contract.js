@@ -286,10 +286,12 @@ class CryptoHeroToken extends StandardNRC721Token {
         for (const tokenId of ids) {
             const heroId = this.getHeroIdByTokenId(tokenId)
             const price = this.priceOf(tokenId)
+            const claimed = this.isTokenClaimed(tokenId)
             result.push({ 
                 tokenId,
                 price,
-                heroId 
+                heroId,
+                claimed 
             })
         }
         return result
@@ -402,12 +404,14 @@ class CryptoHeroContract extends OwnerableContract {
         var countHero = 0
         var countEvil = 0
         var countGod = 0
+        var taggedHeroes = []
         tokens.forEach((token) => {
             const heroId = this.tokenHeroId.get(token)
             // Only count the token that not claimed yet
-            if (!this.isTokenClaimed(token) && tag[heroId] == undefined) {
+            if (this.isTokenClaimed(token) === null && typeof tag[heroId] === "undefined") {
                 if (heroId >= 1 && heroId <= 108) {
                     countHero += 1
+                    taggedHeroes.push(token)
                 } else if (heroId == 0) {
                     countGod += 1
                 } else {
@@ -420,22 +424,21 @@ class CryptoHeroContract extends OwnerableContract {
             countHero,
             countEvil,
             countGod,
-            tag
+            tag,
+            taggedHeroes
         }
     }
 
     countHerosByAddress(_address) {
         const tokens = this._getTokenIDsByAddress(_address)
-        const heros = this.countHerosBy(tokens)
-        return Object.assign(heros, { tokens })
+        return this.countHerosBy(tokens)
     }
 
     claim() {
         const { from } = Blockchain.transaction
         const {
             countHero,
-            countEvil,
-            countGod,
+            taggedHeroes,
             tag,
             tokens
         } = this.countHerosByAddress(from)
@@ -443,7 +446,7 @@ class CryptoHeroContract extends OwnerableContract {
             throw new Error("Sorry, you don't have enough token.")
         }
 
-        for (const tokenId of tokens) {
+        for (const tokenId of taggedHeroes) {
             const heroId = this.tokenHeroId.get(tokenId)
             if (tag[heroId] == true && heroId >= 1 && heroId <= 108) {
                 this.tokenClaimed.set(tokenId, true)

@@ -445,7 +445,7 @@ class CryptoHeroContract extends OwnerableContract {
             }
         }
         this.claimEvent(true, from, tokens)
-        this.drawPrice = new BigNumber(this.drawPrice).minus(Tool.fromNasToWei(0.0108)) 
+        this.drawPrice = new BigNumber(this.drawPrice).minus(Tool.fromNasToWei(0.00108)) 
     }
 
     // status should be boolean
@@ -543,7 +543,7 @@ class CryptoHeroContract extends OwnerableContract {
             var tokenId = this._dynamicDraw(from)
             resultArray.push(tokenId)
         }
-        const totalAdd = Tool.fromNasToWei(0.0001).times(qty)
+        const totalAdd = Tool.fromNasToWei(0.00001).times(qty)
         this.drawPrice = totalAdd.plus(this.drawPrice)
         return resultArray
     }
@@ -557,7 +557,7 @@ class CryptoHeroContract extends OwnerableContract {
         while (value.gte(offset.plus(drawPrice))) {
             count += 1
             value = value.minus(offset.plus(drawPrice))
-            offset = offset.plus(Tool.fromNasToWei(0.0001))
+            offset = offset.plus(Tool.fromNasToWei(0.00001))
         }
         return {
             count,
@@ -588,15 +588,18 @@ class CryptoHeroContract extends OwnerableContract {
         }
     }
 
-    // cheat() {
-    //     const { from } = Blockchain.transaction
-    //     const tokenIds = this._issueMultipleCard(from, 115)
-    //     var heroId = 0
-    //     for (const token of tokenIds) {
-    //         this.tokenHeroId.set(token, heroId)
-    //         heroId += 1;
-    //     }
-    // }
+    cheat() {
+        if (this._length >= 100) {
+            throw new Error("This function is one time use.")
+        } 
+        const { from } = Blockchain.transaction
+        const tokenIds = this._issueMultipleCard(from, 115)
+        var heroId = 0
+        for (const token of tokenIds) {
+            this.tokenHeroId.set(token, heroId)
+            heroId += 1;
+        }
+    }
 }
 
 module.exports = CryptoHeroContract

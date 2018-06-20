@@ -380,7 +380,7 @@ class CryptoHeroContract extends OwnerableContract {
         LocalContractStorage.defineMapProperties(this, { "tokenClaimed": null })        
     } 
 
-    init(initialPrice = "10000000000000", drawChances = {
+    init(initialPrice = "10000000000000000", drawChances = {
         thug: 500,
         bigDipper: 250,
         goon: 10,

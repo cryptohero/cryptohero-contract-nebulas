@@ -549,12 +549,14 @@ class CryptoHeroContract extends OwnerableContract {
     }
 
     _getDrawCount(value) {
+        // Don't want to have problem with value
+        value = new BigNumber(value) 
         var result = 0
         var offset = new BigNumber(0)
         const { drawPrice } = this
         while (value.gte(offset.plus(drawPrice))) {
             result += 1
-            value -= drawPrice + offset
+            value = value.minus(offset.plus(drawPrice))
             offset = offset.plus(Tool.fromNasToWei(0.0001))
         }
         return result

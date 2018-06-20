@@ -399,6 +399,7 @@ class CryptoHeroContract extends OwnerableContract {
         var countGod = 0
         tokens.forEach((token) => {
             const heroId = this.tokenHeroId.get(token)
+            // Only count the token that not claimed yet
             if (!this.isTokenClaimed(token) && tag[heroId] == undefined) {
                 if (heroId >= 1 && heroId <= 108) {
                     countHero += 1
@@ -444,7 +445,7 @@ class CryptoHeroContract extends OwnerableContract {
                 this.tokenClaimed.set(tokenId, true)
             }
         }
-        this.drawPrice = new BigNumber(drawPrice).minus(Tool.fromNasToWei(0.00000000108))        
+        this.drawPrice = new BigNumber(drawPrice).minus(Tool.fromNasToWei(0.0108))        
     }
 
     getDrawPrice() {
@@ -532,13 +533,9 @@ class CryptoHeroContract extends OwnerableContract {
             resultArray.push(tokenId)
         }
         // In the final the base is 0.0001, 0.00000000001 for dev only
-        const totalAdd = Tool.fromNasToWei(0.00000000001).times(qty)
+        const totalAdd = Tool.fromNasToWei(0.0001).times(qty)
         this.drawPrice = totalAdd.plus(this.drawPrice)
         return resultArray
-    }
-
-    checkParameter(pr1) {
-        return pr1
     }
 
     _getDrawCount(value) {

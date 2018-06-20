@@ -541,21 +541,29 @@ class CryptoHeroContract extends OwnerableContract {
         return pr1
     }
 
+    _getDrawCount(value) {
+        var result = 0
+        var offset = 0
+        const { drawPrice } = this
+        while (value > drawPrice + offset) {
+            result += 1
+            value -= drawPrice + offset
+            offset += Tool.fromNasToWei(0.00000000001)
+        }
+        return result
+    }
+
     draw(referer) {
         var {
             from,
             value
         } = Blockchain.transaction
-        const {
-            drawPrice,
-            referCut
-        } = this
-        const qty = value.dividedToIntegerBy(drawPrice)
+        const { referCut } = this
+        const drawCount = this._getDrawCount(value)
         if (value.gt(0)) {
-            const result = this._issueMultipleCard(from, qty)
+            const result = this._issueMultipleCard(from, drawCount)
             if (referer !== "") {
                 const withoutCut = new BigNumber(100).dividedToIntegerBy(referCut)
-                // const referCut = value.dividedToIntegerBy(100 / referCut)
                 Blockchain.transfer(referer, value.dividedToIntegerBy(withoutCut))
             }
             return result

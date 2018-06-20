@@ -6,6 +6,7 @@
  */
 "use strict"
 
+
 class Operator {
     constructor(obj) {
         this.operator = {}
@@ -49,7 +50,11 @@ class Tool {
     }
 }
 
-
+/**
+ * For Test Only
+ */
+const basePrice = Tool.fromNasToWei(0.00000000000001)
+const addPricePerCard = Tool.fromNasToWei(0.00000000000000001)
 class StandardNRC721Token {
     constructor() {
         // Contract Need to store on-chain data in LocalContractStorage
@@ -380,7 +385,7 @@ class CryptoHeroContract extends OwnerableContract {
         LocalContractStorage.defineMapProperties(this, { "tokenClaimed": null })        
     } 
 
-    init(initialPrice = "10000000000000000", drawChances = {
+    init(initialPrice = basePrice, drawChances = {
         thug: 500,
         bigDipper: 250,
         goon: 10,
@@ -543,7 +548,7 @@ class CryptoHeroContract extends OwnerableContract {
             var tokenId = this._dynamicDraw(from)
             resultArray.push(tokenId)
         }
-        const totalAdd = Tool.fromNasToWei(0.00001).times(qty)
+        const totalAdd = new BigNumber(addPricePerCard).times(qty)
         this.drawPrice = totalAdd.plus(this.drawPrice)
         return resultArray
     }
@@ -556,7 +561,7 @@ class CryptoHeroContract extends OwnerableContract {
         while (remain.gte(offset.plus(drawPrice))) {
             count += 1
             remain = remain.minus(offset.plus(drawPrice))
-            offset = offset.plus(Tool.fromNasToWei(0.00001))
+            offset = offset.plus(new BigNumber(addPricePerCard))
         }
         const actualCost = new BigNumber(value).minus(remain)
         return {
@@ -580,14 +585,14 @@ class CryptoHeroContract extends OwnerableContract {
         Blockchain.transfer(from, remain)
         if (count > 0) {
             const result = this._issueMultipleCard(from, count)
-            this.sendCommissionTo(referer, actualCost)
+            this._sendCommissionTo(referer, actualCost)
             return result
         } else {
             throw new Error("You don't have enough token, try again with more.")
         }
     }
 
-    sendCommissionTo(referer, actualCost) {
+    _sendCommissionTo(referer, actualCost) {
         const { referCut } = this
         if (referer !== "") {
             const withoutCut = new BigNumber(100).dividedToIntegerBy(referCut)

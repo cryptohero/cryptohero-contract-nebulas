@@ -549,8 +549,7 @@ class CryptoHeroContract extends OwnerableContract {
     }
 
     _getDrawCount(value) {
-        // Don't want to have problem with value
-        var remain = new BigNumber(value) 
+        var remain = new BigNumber(value)
         var count = 0
         var offset = new BigNumber(0)
         const { drawPrice } = this
@@ -559,32 +558,40 @@ class CryptoHeroContract extends OwnerableContract {
             remain = remain.minus(offset.plus(drawPrice))
             offset = offset.plus(Tool.fromNasToWei(0.00001))
         }
+        const actualCost = new BigNumber(value).minus(remain)
         return {
             count,
-            remain
+            remain,
+            actualCost
         }
     }
 
-    draw(referer) {
+    // referer by default is empty
+    draw(referer = "") {
         var {
             from,
             value
         } = Blockchain.transaction
-        const { referCut } = this
         const {
             count,
-            remain
+            remain,
+            actualCost
         } = this._getDrawCount(value)
         Blockchain.transfer(from, remain)
         if (count > 0) {
             const result = this._issueMultipleCard(from, count)
-            if (referer !== "") {
-                const withoutCut = new BigNumber(100).dividedToIntegerBy(referCut)
-                Blockchain.transfer(referer, value.dividedToIntegerBy(withoutCut))
-            }
+            this.sendCommissionTo(referer, actualCost)
             return result
         } else {
             throw new Error("You don't have enough token, try again with more.")
+        }
+    }
+
+    sendCommissionTo(referer, actualCost) {
+        const { referCut } = this
+        if (referer !== "") {
+            const withoutCut = new BigNumber(100).dividedToIntegerBy(referCut)
+            Blockchain.transfer(referer, actualCost.dividedToIntegerBy(withoutCut))
         }
     }
 

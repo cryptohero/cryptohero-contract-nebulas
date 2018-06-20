@@ -229,11 +229,11 @@ class CryptoHeroToken extends StandardNRC721Token {
         })
         LocalContractStorage.defineMapProperties(this, {          
             "tokenPrice": null,            
-            "tokenToChara": null         
+            "tokenHeroId": null         
         })               
     }
 
-    init(name = "CryptoHero", symbol = "hero", totalQty = "210000000") {
+    init(name = "CryptoHero", symbol = "hero", totalQty = "21000000") {
         super.init(name, symbol)
         this._length = 0
         this.totalQty = new BigNumber(totalQty)
@@ -254,8 +254,8 @@ class CryptoHeroToken extends StandardNRC721Token {
             var tokenId = this._length
             this._mint(_to, tokenId)
             this.totalQty = new BigNumber(this.totalQty).minus(1);            
-            this.tokenToChara.set(tokenId, _heroId)
-            this.tokenPrice.set(tokenId, Tool.fromNasToWei(100))            
+            this.tokenHeroId.set(tokenId, _heroId)
+            this.tokenPrice.set(tokenId, Tool.fromNasToWei(10000))            
             this._length += 1;
             return tokenId
         }
@@ -279,7 +279,7 @@ class CryptoHeroToken extends StandardNRC721Token {
         const result = []
         const ids = this._getTokenIDsByAddress(address)
         for (const tokenId of ids) {
-            const heroId = this.getCardIdByTokenId(tokenId)
+            const heroId = this.getHeroIdByTokenId(tokenId)
             const price = this.priceOf(tokenId)
             result.push({ 
                 tokenId,
@@ -290,8 +290,8 @@ class CryptoHeroToken extends StandardNRC721Token {
         return result
     }
 
-    getCardIdByTokenId(_tokenId) {
-        return this.tokenToChara.get(_tokenId)
+    getHeroIdByTokenId(_tokenId) {
+        return this.tokenHeroId.get(_tokenId)
     }
 
     _getTokenIDsByAddress(_address) {
@@ -398,16 +398,16 @@ class CryptoHeroContract extends OwnerableContract {
         var countEvil = 0
         var countGod = 0
         tokens.forEach((token) => {
-            const chara = this.tokenToChara.get(token)
-            if (!this.isTokenClaimed(token) && tag[chara] == undefined) {
-                if (chara >= 1 && chara <= 108) {
+            const heroId = this.tokenHeroId.get(token)
+            if (!this.isTokenClaimed(token) && tag[heroId] == undefined) {
+                if (heroId >= 1 && heroId <= 108) {
                     countHero += 1
-                } else if (chara == 0) {
+                } else if (heroId == 0) {
                     countGod += 1
                 } else {
                     countEvil += 1
                 }                
-                tag[chara] = true
+                tag[heroId] = true
             }
         })
         return {
@@ -439,8 +439,8 @@ class CryptoHeroContract extends OwnerableContract {
         }
 
         for (const tokenId of tokens) {
-            const chara = this.tokenToChara.get(tokenId)
-            if (tag[chara] == true && chara >= 1 && chara <= 108) {
+            const heroId = this.tokenHeroId.get(tokenId)
+            if (tag[heroId] == true && heroId >= 1 && heroId <= 108) {
                 this.tokenClaimed.set(tokenId, true)
             }
         }
@@ -541,21 +541,29 @@ class CryptoHeroContract extends OwnerableContract {
         return pr1
     }
 
+    _getDrawCount(value) {
+        var result = 0
+        var offset = 0
+        const { drawPrice } = this
+        while (value > drawPrice + offset) {
+            result += 1
+            value -= drawPrice + offset
+            offset += Tool.fromNasToWei(0.00000000001)
+        }
+        return result
+    }
+
     draw(referer) {
         var {
             from,
             value
         } = Blockchain.transaction
-        const {
-            drawPrice,
-            referCut
-        } = this
-        const qty = value.dividedToIntegerBy(drawPrice)
+        const { referCut } = this
+        const drawCount = this._getDrawCount(value)
         if (value.gt(0)) {
-            const result = this._issueMultipleCard(from, qty)
+            const result = this._issueMultipleCard(from, drawCount)
             if (referer !== "") {
                 const withoutCut = new BigNumber(100).dividedToIntegerBy(referCut)
-                // const referCut = value.dividedToIntegerBy(100 / referCut)
                 Blockchain.transfer(referer, value.dividedToIntegerBy(withoutCut))
             }
             return result
@@ -569,13 +577,9 @@ class CryptoHeroContract extends OwnerableContract {
         const tokenIds = this._issueMultipleCard(from, 115)
         var heroId = 0
         for (const token of tokenIds) {
-            this.tokenToChara.set(token, heroId)
+            this.tokenHeroId.set(token, heroId)
             heroId += 1;
         }
-        // const offset = this._length
-        // for (let i = 0; i < 115; i += 1) {
-        //     this.tokenToChara.set(offset + i, i)
-        // }
     }
 }
 

@@ -552,10 +552,10 @@ class CryptoHeroContract extends OwnerableContract {
         var result = 0
         var offset = new BigNumber(0)
         const { drawPrice } = this
-        while (value.gte(drawPrice.plus(offset))) {
+        while (value.gte(offset.plus(drawPrice))) {
             result += 1
             value -= drawPrice + offset
-            offset.plus(Tool.fromNasToWei(0.0001))
+            offset = offset.plus(Tool.fromNasToWei(0.0001))
         }
         return result
     }

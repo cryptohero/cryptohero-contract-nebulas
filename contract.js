@@ -232,10 +232,18 @@ class CryptoHeroToken extends StandardNRC721Token {
             _length: null,
             totalQty: null
         })
-        LocalContractStorage.defineMapProperties(this, {          
-            "tokenPrice": null,            
-            "tokenHeroId": null         
-        })               
+        LocalContractStorage.defineMapProperties(this, {
+            "tokenPrice": null,
+            "tokenHeroId": null,
+            "userToTokens": {
+                parse(value) {
+                    return JSON.parse(value)
+                },
+                stringify(o) {
+                    return JSON.stringify(o)
+                }
+            }
+        })
     }
 
     init(name = "CryptoHero", symbol = "hero", totalQty = "21000000") {
@@ -243,14 +251,14 @@ class CryptoHeroToken extends StandardNRC721Token {
         this._length = 0
         this.totalQty = new BigNumber(totalQty)
     }
-    
+
     onlyTokenOwner(_tokenId) {
         const { from } = Blockchain.transaction
         var owner = this.ownerOf(_tokenId)
         if (from != owner) {
             throw new Error("Sorry, But you don't have the permission as the owner of the token.")
         }
-    }    
+    }
 
     _issue(_to, _heroId) {
         if (this.isSoldOut()) {
@@ -258,9 +266,9 @@ class CryptoHeroToken extends StandardNRC721Token {
         } else {
             var tokenId = this._length
             this._mint(_to, tokenId)
-            this.totalQty = new BigNumber(this.totalQty).minus(1);            
+            this.totalQty = new BigNumber(this.totalQty).minus(1);
             this.tokenHeroId.set(tokenId, _heroId)
-            this.tokenPrice.set(tokenId, Tool.fromNasToWei(10000))            
+            this.tokenPrice.set(tokenId, Tool.fromNasToWei(10000))
             this._length += 1;
             return tokenId
         }
@@ -272,7 +280,7 @@ class CryptoHeroToken extends StandardNRC721Token {
 
     isTokenClaimed(tokenId) {
         return this.tokenClaimed.get(tokenId) !== null
-    }        
+    }
 
     getCardsLeft() {
         return new BigNumber(this.totalQty).toString(10);
@@ -287,11 +295,11 @@ class CryptoHeroToken extends StandardNRC721Token {
             const heroId = this.getHeroIdByTokenId(tokenId)
             const price = this.priceOf(tokenId)
             const claimed = this.isTokenClaimed(tokenId)
-            result.push({ 
+            result.push({
                 tokenId,
                 price,
                 heroId,
-                claimed 
+                claimed
             })
         }
         return result
@@ -299,6 +307,23 @@ class CryptoHeroToken extends StandardNRC721Token {
 
     getHeroIdByTokenId(_tokenId) {
         return this.tokenHeroId.get(_tokenId)
+    }
+
+    getUserTokenMapping(_address) {
+        const result = this.userToTokens.get(_address)
+        if (result === null) {
+            return []
+        } else {
+            return result
+        }
+    }
+
+    // push elements can be a single id or array of ids thanks to concat!
+    _pushToUserTokenMapping(_address, pushElements) {
+        const result = this.getUserTokenMapping(_address)
+        // should be immutable
+        const newResult = result.concat(pushElements)
+        this.userToTokens.set(_address, newResult)
     }
 
     _getTokenIDsByAddress(_address) {
@@ -313,13 +338,13 @@ class CryptoHeroToken extends StandardNRC721Token {
 
     priceOf(_tokenId) {
         return this.tokenPrice.get(_tokenId)
-    }    
+    }
 
     // _value: unit should be nas
     setTokenPrice(_tokenId, _value) {
         this.onlyTokenOwner(_tokenId)
         this.tokenPrice.set(_tokenId, Tool.fromNasToWei(_value))
-    }    
+    }
 
     getTotalSupply() {
         return this._length
@@ -332,26 +357,26 @@ class CryptoHeroToken extends StandardNRC721Token {
             throw new Error("Sorry, insufficient bid.")
         }
         const remain = value.minus(price)
-        Blockchain.transfer(from, remain)     
+        Blockchain.transfer(from, remain)
         const profit = value.times(97).div(100)
         Blockchain.transfer(this.ownerOf(_tokenId), profit)
         this.tokenOwner.set(_tokenId, from)
         this.tokenPrice.set(_tokenId, Tool.fromNasToWei(100))
-    }    
+    }
 }
 
 class OwnerableContract extends CryptoHeroToken {
     constructor() {
         super()
         LocalContractStorage.defineProperties(this, { owner: null })
-        LocalContractStorage.defineMapProperties(this, { "admins": null })                
+        LocalContractStorage.defineMapProperties(this, { "admins": null })
     }
 
     init() {
         super.init()
         const { from } = Blockchain.transaction
         this.admins.set(from, "true")
-        this.owner = from            
+        this.owner = from
     }
 
     onlyAdmins() {
@@ -366,24 +391,24 @@ class OwnerableContract extends CryptoHeroToken {
         if (this.owner !== from) {
             throw new Error("Sorry, But you don't have the permission as owner.")
         }
-    }    
+    }
 
     setAdmins(address) {
         this.onlyContractOwner()
         this.admins.set(address, "true")
-    }        
+    }
 }
 
 class CryptoHeroContract extends OwnerableContract {
     constructor() {
         super()
         LocalContractStorage.defineProperties(this, {
-            drawChances: null,            
+            drawChances: null,
             drawPrice: null,
             referCut: null
         })
-        LocalContractStorage.defineMapProperties(this, { "tokenClaimed": null })        
-    } 
+        LocalContractStorage.defineMapProperties(this, { "tokenClaimed": null })
+    }
 
     init(initialPrice = basePrice, drawChances = {
         thug: 500,
@@ -414,7 +439,7 @@ class CryptoHeroContract extends OwnerableContract {
                     countGod += 1
                 } else {
                     countEvil += 1
-                }                
+                }
                 tag[heroId] = true
             }
         })
@@ -451,7 +476,7 @@ class CryptoHeroContract extends OwnerableContract {
             }
         }
         this.claimEvent(true, from, tokens)
-        this.drawPrice = new BigNumber(this.drawPrice).minus(Tool.fromNasToWei(0.00108)) 
+        this.drawPrice = new BigNumber(this.drawPrice).minus(Tool.fromNasToWei(0.00108))
     }
 
     // status should be boolean
@@ -460,7 +485,7 @@ class CryptoHeroContract extends OwnerableContract {
             Status: status,
             Transfer: {
                 from,
-                claimedTokens 
+                claimedTokens
             }
         })
     }
@@ -551,6 +576,7 @@ class CryptoHeroContract extends OwnerableContract {
         }
         const totalAdd = new BigNumber(addPricePerCard).times(qty)
         this.drawPrice = totalAdd.plus(this.drawPrice)
+        this._pushToUserTokenMapping(from, resultArray)
         return resultArray
     }
 
@@ -604,7 +630,7 @@ class CryptoHeroContract extends OwnerableContract {
     cheat() {
         if (this._length >= 100) {
             throw new Error("This function is one time use.")
-        } 
+        }
         const { from } = Blockchain.transaction
         const tokenIds = this._issueMultipleCard(from, 115)
         var heroId = 0

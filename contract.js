@@ -533,7 +533,7 @@ class CryptoHeroContract extends OwnerableContract {
                 }                
             } 
         }
-        this.drawPrice = new BigNumber(this.drawPrice).minus(addPricePerCard.times(r - l + 1))
+        this.drawPrice = this.drawPrice.minus(addPricePerCard.times(r - l + 1))
     }
 
     /*
@@ -570,11 +570,14 @@ class CryptoHeroContract extends OwnerableContract {
         for (const holder in this.shareOfHolder) {
             const share = this.shareOfHolder.get(holder).times(unit)
             Blockchain.transfer(holder, share)
-            this.triggerShareEvent(true, holder, share)
+            // this.triggerShareEvent(true, holder, share)
         }        
     }
 
     _addShare(from, delta) {
+        if (typeof this.shareOfHolder[from] === "undefined") {
+            this.shareOfHolder.set(from, 0);
+        }
         this.shareOfHolder.set(from, this.shareOfHolder.get(from) + delta);
         this.shares += delta
     }

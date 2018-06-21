@@ -53,8 +53,8 @@ class Tool {
 /**
  * For Test Only
  */
-const basePrice = Tool.fromNasToWei(0.00000000000001)
-const addPricePerCard = Tool.fromNasToWei(0.00000000000000001)
+const basePrice = Tool.fromNasToWei(0.00001)
+const addPricePerCard = Tool.fromNasToWei(0.000001)
 class StandardNRC721Token {
     constructor() {
         // Contract Need to store on-chain data in LocalContractStorage

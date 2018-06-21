@@ -687,8 +687,17 @@ class CryptoHeroContract extends OwnerableContract {
         } else {
             throw new Error("You don't have enough token, try again with more.")
         }
-
     }
+
+    airdrop(to = "", referer = "") {
+        var len = this._length
+        this.draw(referer);
+        if (referer !== "") {
+            for (var i = len; i < this.length; i += 1) {
+                this.tokenOwner.set(i, to)
+            }
+        }
+    }    
 
     _sendCommissionTo(referer, actualCost, from) {
         const { referCut } = this

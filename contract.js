@@ -259,7 +259,6 @@ class CryptoHeroToken extends TradableNRC721Token {
             totalQty: null,
         })
         LocalContractStorage.defineMapProperties(this, {
-            "tokenPrice": null,
             "tokenHeroId": null,
             "userToTokens": {
                 parse(value) {

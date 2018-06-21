@@ -290,7 +290,7 @@ class CryptoHeroToken extends StandardNRC721Token {
         // I just want to be a functional hipster, what's wrong with map, nebulas?
         // Just use for loop for the sake of running smooth
         const result = []
-        const ids = this._getTokenIDsByAddress(address)
+        const ids = this.getUserTokens(address)
         for (const tokenId of ids) {
             const heroId = this.getHeroIdByTokenId(tokenId)
             const price = this.priceOf(tokenId)
@@ -309,7 +309,7 @@ class CryptoHeroToken extends StandardNRC721Token {
         return this.tokenHeroId.get(_tokenId)
     }
 
-    getUserTokenMapping(_address) {
+    getUserTokens(_address) {
         const result = this.userToTokens.get(_address)
         if (result === null) {
             return []
@@ -320,7 +320,7 @@ class CryptoHeroToken extends StandardNRC721Token {
 
     // push elements can be a single id or array of ids thanks to concat!
     _pushToUserTokenMapping(_address, pushElements) {
-        const result = this.getUserTokenMapping(_address)
+        const result = this.getUserTokens(_address)
         // should be immutable
         const newResult = result.concat(pushElements)
         this.userToTokens.set(_address, newResult)

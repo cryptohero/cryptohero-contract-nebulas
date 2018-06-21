@@ -492,7 +492,7 @@ class CryptoHeroContract extends OwnerableContract {
             }
         }
         this.claimEvent(true, from, tokens)
-        this.drawPrice = new BigNumber(this.drawPrice).minus(Tool.fromNasToWei(0.00108))
+        this.drawPrice = new BigNumber(this.drawPrice).minus(Tool.fromNasToWei(addPricePerCard.times(108)))
     }
 
     // status should be boolean

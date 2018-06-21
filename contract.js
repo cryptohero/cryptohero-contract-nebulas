@@ -461,7 +461,8 @@ class CryptoHeroContract extends OwnerableContract {
             drawPrice: null,
             referCut: null,
             myAddress: null,
-            shares: null            
+            shares: null,
+            holders: []
         })
         LocalContractStorage.defineMapProperties(this, { 
             "tokenClaimed": null,
@@ -567,23 +568,19 @@ class CryptoHeroContract extends OwnerableContract {
         }
         var balance = new BigNumber(Blockchain.getAccountState(this.myAddress).balance);
         var unit = balance.div(this.shares)
-        for (const holder in this.shareOfHolder) {
-            console.info(holder, this.shareOfHolder.get(holder));
-            // const share = this.shareOfHolder.get(holder).times(unit)
-            // Blockchain.transfer(holder, share)
-            // this.triggerShareEvent(true, holder, share)
+        for (const holder in this.holders) {
+            const share = this.shareOfHolder.get(holder).times(unit)
+            Blockchain.transfer(holder, share)
+            this.triggerShareEvent(true, holder, share)
         }        
     }
 
-    _addShare(from, delta) {
-
-        if (typeof this.shareOfHolder[from] === "undefined") {
-            this.shareOfHolder.set(from, 0);
+    _addShare(holder, delta) {
+        if (typeof this.shareOfHolder[holder] === "undefined") {
+            this.holders.push(holder)
         }
-        this.shareOfHolder.set(from, this.shareOfHolder.get(from) + delta);
+        this.shareOfHolder.set(holder, this.shareOfHolder.get(holder) + delta)
         this.shares += delta
-        console.info(this.shares)
-        console.info(from, this.shareOfHolder.get(from));
     }
 
     claim() {

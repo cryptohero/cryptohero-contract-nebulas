@@ -271,7 +271,7 @@ class CryptoHeroToken extends StandardNRC721Token {
     }
 
     isTokenClaimed(tokenId) {
-        return this.tokenClaimed.get(tokenId)
+        return this.tokenClaimed.get(tokenId) !== null
     }        
 
     getCardsLeft() {
@@ -408,7 +408,7 @@ class CryptoHeroContract extends OwnerableContract {
         tokens.forEach((token) => {
             const heroId = this.tokenHeroId.get(token)
             // Only count the token that not claimed yet
-            if (this.isTokenClaimed(token) === null && typeof tag[heroId] === "undefined") {
+            if (!this.isTokenClaimed(token) && typeof tag[heroId] === "undefined") {
                 if (heroId >= 1 && heroId <= 108) {
                     countHero += 1
                     taggedHeroes.push(token)

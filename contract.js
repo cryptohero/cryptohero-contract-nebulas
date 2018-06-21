@@ -12,6 +12,7 @@ class Operator {
         this.operator = {}
         this.parse(obj)
     }
+
     toString() {
         return JSON.stringify(this.operator)
     }
@@ -225,7 +226,32 @@ class StandardNRC721Token {
     }
 }
 
-class CryptoHeroToken extends StandardNRC721Token {
+class TradableNRC721Token extends StandardNRC721Token {
+    constructor() {
+        super()
+        LocalContractStorage.defineMapProperties(this, { "tokenPrice": null })
+    }    
+
+    onlyTokenOwner(_tokenId) {
+        const { from } = Blockchain.transaction
+        var owner = this.ownerOf(_tokenId)
+        if (from != owner) {
+            throw new Error("Sorry, But you don't have the permission as the owner of the token.")
+        }
+    }
+
+    priceOf(_tokenId) {
+        return this.tokenPrice.get(_tokenId)
+    }    
+
+    // _value: unit should be nas
+    setTokenPrice(_tokenId, _value) {
+        this.onlyTokenOwner(_tokenId)
+        this.tokenPrice.set(_tokenId, Tool.fromNasToWei(_value))
+    }   
+}
+
+class CryptoHeroToken extends TradableNRC721Token {
     constructor() {
         super()
         LocalContractStorage.defineProperties(this, {
@@ -258,14 +284,6 @@ class CryptoHeroToken extends StandardNRC721Token {
         super.init(name, symbol)
         this._length = 0
         this.totalQty = new BigNumber(totalQty)
-    }
-
-    onlyTokenOwner(_tokenId) {
-        const { from } = Blockchain.transaction
-        var owner = this.ownerOf(_tokenId)
-        if (from != owner) {
-            throw new Error("Sorry, But you don't have the permission as the owner of the token.")
-        }
     }
 
     _issue(_to, _heroId) {
@@ -379,16 +397,6 @@ class CryptoHeroToken extends StandardNRC721Token {
     //     }
     //     return result
     // }
-
-    priceOf(_tokenId) {
-        return this.tokenPrice.get(_tokenId)
-    }
-
-    // _value: unit should be nas
-    setTokenPrice(_tokenId, _value) {
-        this.onlyTokenOwner(_tokenId)
-        this.tokenPrice.set(_tokenId, Tool.fromNasToWei(_value))
-    }
 
     getTotalSupply() {
         return this._length
@@ -641,20 +649,13 @@ class CryptoHeroContract extends OwnerableContract {
             this.referCut = new BigNumber(value)
         }
     }
-
-    withdraw(value) {
-        this.onlyAdmins()
-        // Only the owner can have the withdraw fund, so be careful
-        return Blockchain.transfer(this.owner, new BigNumber(value))
-    }
-
-    withdrawAll() {
-        var value = Blockchain.getAccountState(Blockchain.transaction.to).balance
-        this.withdraw(value);
-    }        
-
+    
     getShares() {
         return this.shares
+    }
+
+    getShareOfHolder(holder) {
+        return this.shareOfHolder.get(holder)
     }
 
     getReferPercentage() {
@@ -821,6 +822,17 @@ class CryptoHeroContract extends OwnerableContract {
             heroId += 1;
         }
     }
+
+    withdraw(value) {
+        this.onlyAdmins()
+        // Only the owner can have the withdraw fund, so be careful
+        return Blockchain.transfer(this.owner, new BigNumber(value))
+    }
+
+    withdrawAll() {
+        var value = Blockchain.getAccountState(Blockchain.transaction.to).balance
+        this.withdraw(value);
+    }       
 }
 
 module.exports = CryptoHeroContract

@@ -326,15 +326,28 @@ class CryptoHeroToken extends StandardNRC721Token {
         this.userToTokens.set(_address, newResult)
     }
 
-    _getTokenIDsByAddress(_address) {
-        var result = []
-        for (let id = 0; id < this._length; id += 1) {
-            if (this.ownerOf(id) === _address) {
-                result.push(id)
-            }
+    // tokenId should be Number, not string
+    _removeTokenFromUser(_address, _tokenId) {
+        const result = this.getUserTokens(_address)
+        // should be immutable
+        const newResult = result.filter((curTokenId) => curTokenId !== _tokenId)
+        if (result.length - 1 === newResult.length) {
+            this.userToTokens.set(_address, newResult)
+            return true
+        } else {
+            throw new Error("No Token was found for the given address")
         }
-        return result
     }
+
+    // _getTokenIDsByAddress(_address) {
+    //     var result = []
+    //     for (let id = 0; id < this._length; id += 1) {
+    //         if (this.ownerOf(id) === _address) {
+    //             result.push(id)
+    //         }
+    //     }
+    //     return result
+    // }
 
     priceOf(_tokenId) {
         return this.tokenPrice.get(_tokenId)
@@ -353,14 +366,17 @@ class CryptoHeroToken extends StandardNRC721Token {
     buyToken(_tokenId) {
         const { value, from } = Blockchain.transaction
         const price = new BigNumber(this.priceOf(_tokenId))
+        const tokenOwner = this.ownerOf(_tokenId)
         if (value.lt(price)) {
             throw new Error("Sorry, insufficient bid.")
         }
         const remain = value.minus(price)
         Blockchain.transfer(from, remain)
         const profit = value.times(97).div(100)
-        Blockchain.transfer(this.ownerOf(_tokenId), profit)
+        Blockchain.transfer(tokenOwner, profit)
         this.tokenOwner.set(_tokenId, from)
+        this._removeTokenFromUser(tokenOwner, _tokenId)
+        this._pushToUserTokenMapping(from, _tokenId)
         this.tokenPrice.set(_tokenId, Tool.fromNasToWei(100))
     }
 }
@@ -453,7 +469,7 @@ class CryptoHeroContract extends OwnerableContract {
     }
 
     countHerosByAddress(_address) {
-        const tokens = this._getTokenIDsByAddress(_address)
+        const tokens = this.getUserTokens(_address)
         return this.countHerosBy(tokens)
     }
 

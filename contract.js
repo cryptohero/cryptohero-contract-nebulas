@@ -504,26 +504,82 @@ class CryptoHeroContract extends OwnerableContract {
         return this.countHerosBy(tokens)
     }
 
+
+    _claim(tag, tokens, l, r) {        
+        for (const tokenId of tokens) {
+            const heroId = this.tokenHeroId.get(tokenId)
+            if (tag[heroId] == true) {
+                if (heroId >= l && heroId <= r) {
+                    this.tokenClaimed.set(tokenId, true)
+                }                
+            } 
+        }
+        this.drawPrice = new BigNumber(this.drawPrice).minus(Tool.fromNasToWei(addPricePerCard.times(108)))
+    }
+
+    /*
+    
+    _addShareHistory(shareHolder, share) {
+        const result = this.getShareHistory(shareHolder)
+        const blockHeight = Blockchain.block.height
+        // should be immutable
+        const newResult = result.concat({
+            shareHolder,
+            share,
+            blockHeight
+        })
+        this.userReferralHistory.set(shareHolder, newResult)
+    }    
+
+    triggerShareEvent(status, shareHolder, share) {
+        // this._addShareHistory(shareHolder, share)
+        Event.Trigger(this.name(), {
+            Status: status,
+            Share: {
+                shareHolder,
+                share
+            }
+        })
+    }    
+
+    _share() {
+        var balance = new BigNumber(Blockchain.getAccountState(this.address));
+        var unit = balance.div(this.shares)
+        for (const shareHolder of this.shareHolders) {
+            const share = this.share.get(shareHolder).times(unit)
+            Blockchain.transfer(shareHolder, share)
+            this.triggerShareEvent(true, shareHolder, share)
+        }        
+    }
+    */
+
     claim() {
         const { from } = Blockchain.transaction
         const {
             countHero,
+            countEvil,
+            countGod,
             taggedHeroes,
+            taggedEvils,
+            taggedGod,
             tag,
             tokens
-        } = this.countHerosByAddress(from)
-        if (countHero !== 108) {
-            throw new Error("Sorry, you don't have enough token.")
+        } = this.countHerosByAddress(from)    
+        if (countHero !== 108 && countEvil !== 6 && countGod !== 1) {
+            throw new Error("Sorry, you don't have enough token to claim.")
         }
+        // this._share()
+        if (countHero == 108) {
+            this._claim(tag, taggedHeroes, 1, 108)
+        }       
+        if (countEvil == 6) {
+            this._claim(tag, taggedEvils, 109, 114)
+        }       
+        if (countGod == 1) {
+            this._claim(tag, taggedGod, 0, 0)
+        }        
 
-        for (const tokenId of taggedHeroes) {
-            const heroId = this.tokenHeroId.get(tokenId)
-            if (tag[heroId] == true && heroId >= 1 && heroId <= 108) {
-                this.tokenClaimed.set(tokenId, true)
-            }
-        }
         this.claimEvent(true, from, tokens)
-        this.drawPrice = new BigNumber(this.drawPrice).minus(Tool.fromNasToWei(addPricePerCard.times(108)))
     }
 
     // status should be boolean
@@ -563,7 +619,7 @@ class CryptoHeroContract extends OwnerableContract {
     }
 
     withdrawAll() {
-        var value = new BigNumber(Blockchain.getAccountState(this.address))
+        var value = new BigNumber(Blockchain.getAccountState(Blockchain.transaction.to))
         this.withdraw(value);
     }        
 

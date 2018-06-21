@@ -242,6 +242,14 @@ class CryptoHeroToken extends StandardNRC721Token {
                 stringify(o) {
                     return JSON.stringify(o)
                 }
+            },
+            "userReferralHistory": {
+                parse(value) {
+                    return JSON.parse(value)
+                },
+                stringify(o) {
+                    return JSON.stringify(o)
+                }
             }
         })
     }
@@ -317,6 +325,29 @@ class CryptoHeroToken extends StandardNRC721Token {
             return result
         }
     }
+
+    getReferralHistory(_address) {
+        const result = this.userReferralHistory.get(_address)
+        if (result === null) {
+            return []
+        } else {
+            return result
+        }
+    }
+
+    _addReferralHistory(referer, to, cut) {
+        const result = this.getReferralHistory(referer)
+        const blockHeight = Blockchain.block.height
+        // should be immutable
+        const newResult = result.concat({
+            referer,
+            to,
+            cut,
+            blockHeight
+        })
+        this.userReferralHistory.set(referer, newResult)
+    }
+
 
     // push elements can be a single id or array of ids thanks to concat!
     _pushToUserTokenMapping(_address, pushElements) {
@@ -624,6 +655,18 @@ class CryptoHeroContract extends OwnerableContract {
         })
     }
 
+    triggerReferralEvent(status, referer, to, cut) {
+        this._addReferralHistory(referer, to, cut)
+        Event.Trigger(this.name(), {
+            Status: status,
+            Referral: {
+                referer,
+                to,
+                cut
+            }
+        })
+    }
+
     // referer by default is empty
     draw(referer = "") {
         var {
@@ -639,7 +682,7 @@ class CryptoHeroContract extends OwnerableContract {
         if (count > 0) {
             const result = this._issueMultipleCard(from, count)
             this.triggerDrawEvent(true, from, result)
-            this._sendCommissionTo(referer, actualCost)
+            this._sendCommissionTo(referer, actualCost, from)
             return result
         } else {
             throw new Error("You don't have enough token, try again with more.")
@@ -647,11 +690,13 @@ class CryptoHeroContract extends OwnerableContract {
 
     }
 
-    _sendCommissionTo(referer, actualCost) {
+    _sendCommissionTo(referer, actualCost, from) {
         const { referCut } = this
         if (referer !== "") {
             const withoutCut = new BigNumber(100).dividedToIntegerBy(referCut)
-            Blockchain.transfer(referer, actualCost.dividedToIntegerBy(withoutCut))
+            const cut = actualCost.dividedToIntegerBy(withoutCut)
+            Blockchain.transfer(referer, cut)
+            this.triggerReferralEvent(true, referer, from, cut)
         }
     }
 

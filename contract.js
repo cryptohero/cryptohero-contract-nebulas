@@ -465,14 +465,7 @@ class CryptoHeroContract extends OwnerableContract {
         })
         LocalContractStorage.defineMapProperties(this, { 
             "tokenClaimed": null,
-            "shareOfHolder": {
-                parse(value) {
-                    return new Operator(value)
-                },
-                stringify(o) {
-                    return o.toString()
-                }
-            }         
+            "shareOfHolder": null                     
         })
     }
 
@@ -603,20 +596,19 @@ class CryptoHeroContract extends OwnerableContract {
         }
         this._share()
         if (countHero == 108) {
-            this._claim(tag, taggedHeroes, 1, 108)
+            // this._claim(tag, taggedHeroes, 1, 108)
             this._addShare(from, 1)
         }       
         if (countEvil == 6) {
-            this._claim(tag, taggedEvils, 109, 114)
+            // this._claim(tag, taggedEvils, 109, 114)
             this._addShare(from, 6)
         }       
         if (countGod == 1) {
-            this._claim(tag, taggedGod, 0, 0)
-            this.shareOfHolder.set(from, this.shareOfHolder.get(from) + 10)
+            // this._claim(tag, taggedGod, 0, 0)
             this._addShare(from, 10)
         }
 
-        this.claimEvent(true, from, tokens)
+        // this.claimEvent(true, from, tokens)
     }
 
     // status should be boolean

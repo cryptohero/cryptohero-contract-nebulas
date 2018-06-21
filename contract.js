@@ -518,7 +518,7 @@ class CryptoHeroContract extends OwnerableContract {
     }
 
     /*
-    
+
     _addShareHistory(shareHolder, share) {
         const result = this.getShareHistory(shareHolder)
         const blockHeight = Blockchain.block.height
@@ -619,7 +619,7 @@ class CryptoHeroContract extends OwnerableContract {
     }
 
     withdrawAll() {
-        var value = new BigNumber(Blockchain.getAccountState(Blockchain.transaction.to))
+        var value = Blockchain.getAccountState(Blockchain.transaction.to).balance
         this.withdraw(value);
     }        
 

@@ -315,6 +315,7 @@ class CryptoHeroToken extends StandardNRC721Token {
         return this.tokenPrice.get(_tokenId)
     }    
 
+    // _value: unit should be nas
     setTokenPrice(_tokenId, _value) {
         this.onlyTokenOwner(_tokenId)
         this.tokenPrice.set(_tokenId, Tool.fromNasToWei(_value))
@@ -325,18 +326,15 @@ class CryptoHeroToken extends StandardNRC721Token {
     }
 
     buyToken(_tokenId) {
-        var value = new BigNumber(Blockchain.transaction.value);
-        if (value < this.priceOf(_tokenId)) {
+        const { value, from } = Blockchain.transaction
+        const price = new BigNumber(this.priceOf(_tokenId))
+        if (value.lt(price)) {
             throw new Error("Sorry, insufficient bid.")
         }
-        const { from } = Blockchain.transaction
-
-        const remain = this.priceOf(_tokenId) - value;
-        Blockchain.transfer(from, remain)        
-        
+        const remain = value.minus(price)
+        Blockchain.transfer(from, remain)     
         const profit = value.times(97).div(100)
-        Blockchain.transfer(this.ownerOf(_tokenId), profit)        
-
+        Blockchain.transfer(this.ownerOf(_tokenId), profit)
         this.tokenOwner.set(_tokenId, from)
         this.tokenPrice.set(_tokenId, Tool.fromNasToWei(100))
     }    

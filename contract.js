@@ -230,7 +230,8 @@ class CryptoHeroToken extends StandardNRC721Token {
         super()
         LocalContractStorage.defineProperties(this, {
             _length: null,
-            totalQty: null
+            totalQty: null,
+            shares: 0
         })
         LocalContractStorage.defineMapProperties(this, {
             "tokenPrice": null,
@@ -452,9 +453,20 @@ class CryptoHeroContract extends OwnerableContract {
         LocalContractStorage.defineProperties(this, {
             drawChances: null,
             drawPrice: null,
-            referCut: null
+            referCut: null,
+            myAddress: null
         })
-        LocalContractStorage.defineMapProperties(this, { "tokenClaimed": null })
+        LocalContractStorage.defineMapProperties(this, { 
+            "tokenClaimed": null,
+            "shareOfHolder": {
+                parse(value) {
+                    return new Operator(value)
+                },
+                stringify(o) {
+                    return o.toString()
+                }
+            }         
+        })
     }
 
     init(initialPrice = basePrice, drawChances = {
@@ -475,6 +487,8 @@ class CryptoHeroContract extends OwnerableContract {
         var countEvil = 0
         var countGod = 0
         var taggedHeroes = []
+        var taggedEvils = []
+        var taggedGod = []
         tokens.forEach((token) => {
             const heroId = this.tokenHeroId.get(token)
             // Only count the token that not claimed yet
@@ -484,8 +498,10 @@ class CryptoHeroContract extends OwnerableContract {
                     taggedHeroes.push(token)
                 } else if (heroId == 0) {
                     countGod += 1
+                    taggedGod.push(token)
                 } else {
                     countEvil += 1
+                    taggedEvils.push(token)                    
                 }
                 tag[heroId] = true
             }
@@ -495,7 +511,9 @@ class CryptoHeroContract extends OwnerableContract {
             countEvil,
             countGod,
             tag,
-            taggedHeroes
+            taggedHeroes,
+            taggedEvils,
+            taggedGod
         }
     }
 
@@ -514,11 +532,10 @@ class CryptoHeroContract extends OwnerableContract {
                 }                
             } 
         }
-        this.drawPrice = new BigNumber(this.drawPrice).minus(Tool.fromNasToWei(addPricePerCard.times(108)))
+        this.drawPrice = new BigNumber(this.drawPrice).minus(Tool.fromNasToWei(addPricePerCard.times(r - l + 1)))
     }
 
     /*
-
     _addShareHistory(shareHolder, share) {
         const result = this.getShareHistory(shareHolder)
         const blockHeight = Blockchain.block.height
@@ -530,6 +547,7 @@ class CryptoHeroContract extends OwnerableContract {
         })
         this.userReferralHistory.set(shareHolder, newResult)
     }    
+    */
 
     triggerShareEvent(status, shareHolder, share) {
         // this._addShareHistory(shareHolder, share)
@@ -541,17 +559,25 @@ class CryptoHeroContract extends OwnerableContract {
             }
         })
     }    
+    
 
     _share() {
-        var balance = new BigNumber(Blockchain.getAccountState(this.address));
+        if (this.shares == 0) {
+            return;
+        }
+        var balance = new BigNumber(Blockchain.getAccountState(this.myAddress).balance);
         var unit = balance.div(this.shares)
-        for (const shareHolder of this.shareHolders) {
-            const share = this.share.get(shareHolder).times(unit)
-            Blockchain.transfer(shareHolder, share)
-            this.triggerShareEvent(true, shareHolder, share)
+        for (const holder of this.shareOfHolder) {
+            const share = this.shareOfHolder.get(holder).times(unit)
+            Blockchain.transfer(holder, share)
+            this.triggerShareEvent(true, holder, share)
         }        
     }
-    */
+
+    _addShare(from, delta) {
+        this.shareOfHolder.set(from, this.shareOfHolder.get(from) + delta);
+        this.shares += delta
+    }
 
     claim() {
         const { from } = Blockchain.transaction
@@ -568,16 +594,20 @@ class CryptoHeroContract extends OwnerableContract {
         if (countHero !== 108 && countEvil !== 6 && countGod !== 1) {
             throw new Error("Sorry, you don't have enough token to claim.")
         }
-        // this._share()
+        this._share()
         if (countHero == 108) {
             this._claim(tag, taggedHeroes, 1, 108)
+            this._addShare(from, 1)
         }       
         if (countEvil == 6) {
             this._claim(tag, taggedEvils, 109, 114)
+            this._addShare(from, 6)
         }       
         if (countGod == 1) {
             this._claim(tag, taggedGod, 0, 0)
-        }        
+            this.shareOfHolder.set(from, this.shareOfHolder.get(from) + 10)
+            this._addShare(from, 10)
+        }
 
         this.claimEvent(true, from, tokens)
     }
@@ -769,7 +799,13 @@ class CryptoHeroContract extends OwnerableContract {
         }
     }
 
+    setMyAddress() {
+        this.onlyContractOwner()
+        this.myAddress = Blockchain.transaction.to
+    }    
+
     cheat() {
+        this.onlyContractOwner()
         if (this._length >= 100) {
             throw new Error("This function is one time use.")
         }

@@ -534,7 +534,7 @@ class CryptoHeroContract extends OwnerableContract {
                 }                
             } 
         }
-        this.drawPrice = this.drawPrice.minus(addPricePerCard.times(r - l + 1))
+        this.drawPrice = new BigNumber(this.drawPrice).minus(addPricePerCard.times(r - l + 1))
     }
 
     /*

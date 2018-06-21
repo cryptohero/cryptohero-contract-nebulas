@@ -600,7 +600,7 @@ class CryptoHeroContract extends OwnerableContract {
         }
         this._share()
         if (countHero == 108) {
-            // this._claim(tag, taggedHeroes, 1, 108)
+            this._claim(tag, taggedHeroes, 1, 108)
             this._addShare(from, 1)
         }       
         if (countEvil == 6) {

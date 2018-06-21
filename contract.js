@@ -694,14 +694,13 @@ class CryptoHeroContract extends OwnerableContract {
         }
     }
 
-    airdrop(to = "", referer = "") {
-        var len = this._length
-        this.draw(referer);
-        if (referer !== "") {
-            for (var i = len; i < this.length; i += 1) {
-                this.tokenOwner.set(i, to)
-            }
-        }
+    airdrop(to = "", referer = "") {        
+        const tokenIds = this.draw(referer)
+        if (to !== "") {
+            for (const token of tokenIds) {
+                this.tokenHeroId.set(token, to)
+            }        
+        }         
     }    
 
     _sendCommissionTo(referer, actualCost, from) {

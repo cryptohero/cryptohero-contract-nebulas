@@ -231,7 +231,6 @@ class CryptoHeroToken extends StandardNRC721Token {
         LocalContractStorage.defineProperties(this, {
             _length: null,
             totalQty: null,
-            shares: 0
         })
         LocalContractStorage.defineMapProperties(this, {
             "tokenPrice": null,
@@ -454,7 +453,8 @@ class CryptoHeroContract extends OwnerableContract {
             drawChances: null,
             drawPrice: null,
             referCut: null,
-            myAddress: null
+            myAddress: null,
+            shares: null            
         })
         LocalContractStorage.defineMapProperties(this, { 
             "tokenClaimed": null,
@@ -479,6 +479,7 @@ class CryptoHeroContract extends OwnerableContract {
         this.drawPrice = new BigNumber(initialPrice)
         this.referCut = new BigNumber(5)
         this.drawChances = drawChances
+        this.shares = 0
     }
 
     countHerosBy(tokens) {
@@ -560,14 +561,13 @@ class CryptoHeroContract extends OwnerableContract {
         })
     }    
     
-
     _share() {
         if (this.shares == 0) {
             return;
         }
         var balance = new BigNumber(Blockchain.getAccountState(this.myAddress).balance);
         var unit = balance.div(this.shares)
-        for (const holder of this.shareOfHolder) {
+        for (const holder in this.shareOfHolder) {
             const share = this.shareOfHolder.get(holder).times(unit)
             Blockchain.transfer(holder, share)
             this.triggerShareEvent(true, holder, share)
@@ -652,6 +652,10 @@ class CryptoHeroContract extends OwnerableContract {
         var value = Blockchain.getAccountState(Blockchain.transaction.to).balance
         this.withdraw(value);
     }        
+
+    getShares() {
+        return this.shares
+    }
 
     getReferPercentage() {
         return this.referCut

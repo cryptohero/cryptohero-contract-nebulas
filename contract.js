@@ -499,7 +499,7 @@ class CryptoHeroContract extends OwnerableContract {
     claimEvent(status, from, claimedTokens) {
         Event.Trigger(this.name(), {
             Status: status,
-            Transfer: {
+            Claim: {
                 from,
                 claimedTokens
             }
@@ -614,6 +614,16 @@ class CryptoHeroContract extends OwnerableContract {
         }
     }
 
+    triggerDrawEvent(status, _from, tokens) {
+        Event.Trigger(this.name(), {
+            Status: status,
+            Draw: {
+                from: _from,
+                tokens
+            }
+        })
+    }
+
     // referer by default is empty
     draw(referer = "") {
         var {
@@ -628,11 +638,13 @@ class CryptoHeroContract extends OwnerableContract {
         Blockchain.transfer(from, remain)
         if (count > 0) {
             const result = this._issueMultipleCard(from, count)
+            this.triggerDrawEvent(true, from, result)
             this._sendCommissionTo(referer, actualCost)
             return result
         } else {
             throw new Error("You don't have enough token, try again with more.")
         }
+
     }
 
     _sendCommissionTo(referer, actualCost) {

@@ -562,6 +562,11 @@ class CryptoHeroContract extends OwnerableContract {
         return Blockchain.transfer(this.owner, new BigNumber(value))
     }
 
+    withdrawAll() {
+        var value = new BigNumber(Blockchain.getAccountState(this.address))
+        this.withdraw(value);
+    }        
+
     getReferPercentage() {
         return this.referCut
     }

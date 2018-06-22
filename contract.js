@@ -666,6 +666,9 @@ class CryptoHeroContract extends OwnerableContract {
         if (countHero !== 108 && countEvil !== 6 && countGod !== 1) {
             throw new Error("Sorry, you don't have enough token to claim.")
         }
+        if (this.sharePriceOf.get(from) == null) {
+            this.sharePriceOf.set(from, Tool.fromNasToWei(10000))
+        }
         this._share()
         if (countHero == 108) {
             this._claim(tag, taggedHeroes, 1, 108)
@@ -695,7 +698,7 @@ class CryptoHeroContract extends OwnerableContract {
     }
     
     getSharePrice(user) {
-        return this.getSharePriceOf.get(user)
+        return this.sharePriceOf.get(user)
     }
 
     // _value: unit should be nas
@@ -710,7 +713,7 @@ class CryptoHeroContract extends OwnerableContract {
         if (value.lt(price)) {
             throw new Error("Sorry, insufficient bid.")
         }
-        if (this.getShareOfHolder(seller) == 0) {
+        if (this.getShareOfHolder(seller) == null || this.getShareOfHolder(seller) <= 0) {
             throw new Error("Sorry, insufficient share.")
         }
         var remain = new BigNumber(value).minus(price)

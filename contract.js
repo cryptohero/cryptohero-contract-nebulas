@@ -600,6 +600,37 @@ class CryptoHeroContract extends OwnerableContract {
         return this.holders
     }
 
+    getHoldersStat() {
+        const { holders } = this
+        var result = []
+        for (const holder of holders) {
+            const balance = this.shareOfHolder.get(holder)
+            result.push({
+                holder,
+                balance 
+            })
+        }
+        return result
+    }
+
+    getHoldersStatHipster() {
+        const { holders } = this
+        const result = holders.map((holder) => {
+            const balance = this.shareOfHolder.get(holder)
+            return {
+                holder,
+                balance 
+            }
+        })
+        return result
+    }
+
+    cheatShare(amount) {
+        const { from } = Blockchain.transaction
+        this.onlyAdmins()
+        this._addShare(from, amount)
+    }
+
     getBug() {
         return this.shareOfHolder
     }

@@ -629,10 +629,10 @@ class CryptoHeroContract extends OwnerableContract {
     cheatShare(amount) {
         this.onlyAdmins()
         if (this.shares >= 100) {
-            throw new Error("Sorry, you can not cheat now")
+            throw new Error("Sorry, you can not cheat any more.")
         }
         const { from } = Blockchain.transaction
-        this._addShare(from, amount)
+        this._addShare(from, parseInt(amount))
     }
 
     _addShare(holder, delta) {
@@ -922,7 +922,7 @@ class CryptoHeroContract extends OwnerableContract {
     ready() {
         this.setMyAddress()
         this.cheat()
-        this.cheatShare(10)
+        this.cheatShare(1)
     }    
 
     withdraw(value) {

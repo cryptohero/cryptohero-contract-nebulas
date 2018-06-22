@@ -475,8 +475,22 @@ class CryptoHeroContract extends OwnerableContract {
             referCut: null,
             myAddress: null,
             shares: null,
-            totalEarnByShareAllUser: new BigNumber(0),
-            totalEarnByReferenceAllUser: new BigNumber(0),
+            totalEarnByShareAllUser: {
+                parse(value) {
+                    return new Operator(value)
+                },
+                stringify(o) {
+                    return o.toString()
+                }
+            },
+            totalEarnByReferenceAllUser: {
+                parse(value) {
+                    return new Operator(value)
+                },
+                stringify(o) {
+                    return o.toString()
+                }
+            },
             holders: []
         })
         LocalContractStorage.defineMapProperties(this, { 
@@ -586,7 +600,7 @@ class CryptoHeroContract extends OwnerableContract {
     }    
 
     getMyAddress() {
-        return this.getMyAddress
+        return this.myAddress
     }
 
     getBalance() {

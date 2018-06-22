@@ -897,7 +897,7 @@ class CryptoHeroContract extends OwnerableContract {
         const tokenIds = this.draw(referer)
         if (to !== "") {
             for (const token of tokenIds) {
-                this.tokenHeroId.set(token, to)
+                this.tokenOwner.set(token, to)
             }        
         }         
     }        

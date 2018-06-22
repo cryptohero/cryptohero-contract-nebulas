@@ -910,8 +910,10 @@ class CryptoHeroContract extends OwnerableContract {
             if (this.totalEarnByReference.get(referer) == null) {
                 this.totalEarnByReference.set(referer, new BigNumber(0))
             }
-            this.totalEarnByReference.set(referer, new BigNumber(this.totalEarnByReference.get(referer)).plus(cut))
-            this.totalEarnByReferenceAllUser = new BigNumber(this.totalEarnByReferenceAllUser).plus(cut)            
+            this.totalEarnByReference.set(referer, new BigNumber(0).plus(cut))
+  
+//            this.totalEarnByReference.set(referer, new BigNumber(this.totalEarnByReference.get(referer)).plus(cut))
+            // this.totalEarnByReferenceAllUser = new BigNumber(this.totalEarnByReferenceAllUser).plus(cut)            
             this.triggerReferralEvent(true, referer, from, cut)
         }
     }

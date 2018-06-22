@@ -475,7 +475,7 @@ class CryptoHeroContract extends OwnerableContract {
             referCut: null,
             myAddress: null,
             shares: null,
-            totalEarnByShareAllUser: {
+            /*totalEarnByShareAllUser: {
                 parse(value) {
                     return new Operator(value)
                 },
@@ -490,7 +490,9 @@ class CryptoHeroContract extends OwnerableContract {
                 stringify(o) {
                     return o.toString()
                 }
-            },
+            },*/
+            totalEarnByShareAllUser: null,
+            totalEarnByReferenceAllUser: null,
             holders: []
         })
         LocalContractStorage.defineMapProperties(this, { 
@@ -849,7 +851,7 @@ class CryptoHeroContract extends OwnerableContract {
     }
 
     triggerReferralEvent(status, referer, to, cut) {
-        this._addReferralHistory(referer, to, cut)
+        // this._addReferralHistory(referer, to, cut)
         Event.Trigger(this.name(), {
             Status: status,
             Referral: {

@@ -280,7 +280,7 @@ class CryptoHeroToken extends TradableNRC721Token {
                 stringify(o) {
                     return JSON.stringify(o)
                 }
-            }
+            }             
         })
     }
 
@@ -475,13 +475,23 @@ class CryptoHeroContract extends OwnerableContract {
             referCut: null,
             myAddress: null,
             shares: null,
+            totalEarnByShareAllUser: new BigNumber(0),
+            totalEarnByReferenceAllUser: new BigNumber(0),
             holders: []
         })
         LocalContractStorage.defineMapProperties(this, { 
             "tokenClaimed": null,
             "shareOfHolder": null,
             "totalEarnByShare": null,
-            "totalEarnByReference": null
+            "totalEarnByReference": null,
+            "sharePriceOf": {
+                parse(value) {
+                    return JSON.parse(value)
+                },
+                stringify(o) {
+                    return JSON.stringify(o)
+                }
+            }    
         })
     }
 
@@ -594,6 +604,7 @@ class CryptoHeroContract extends OwnerableContract {
             const share = unit.times(this.shareOfHolder.get(holder))
             Blockchain.transfer(holder, share)
             this.totalEarnByShare.set(holder, this.totalEarnByShare.get(holder) + share)
+            this.totalEarnByShareAllUser = this.totalEarnByShareAllUser.plus(share)
             this.triggerShareEvent(true, holder, share)
         }        
     }
@@ -659,6 +670,22 @@ class CryptoHeroContract extends OwnerableContract {
         })
     }
 
+    buyShare(seller) {
+        const { value, buyer } = Blockchain.transaction
+        const price = new BigNumber(this.sharePriceOf(seller))
+        if (value.lt(price)) {
+            throw new Error("Sorry, insufficient bid.")
+        }
+        if (this.getShareOfHolder(seller) == 0) {
+            throw new Error("Sorry, insufficient share.")
+        }
+        var remain = new BigNumber(value).minus(price)
+        Blockchain.transfer(buyer, remain)
+        Blockchain.transfer(seller, price)
+        this.getShareOfHolder.set(seller, this.getShareOfHolder.get(seller) - 1)
+        this.getShareOfHolder.set(buyer, this.getShareOfHolder.get(buyer) + 1)
+    }    
+
     getDrawPrice() {
         return this.drawPrice
     }
@@ -676,6 +703,22 @@ class CryptoHeroContract extends OwnerableContract {
         } else {
             this.referCut = new BigNumber(value)
         }
+    }
+
+    getTotalEarnByReferenceAllUser() {
+        return this.totalEarnByReferenceAllUser
+    }
+
+    getTotalEarnByShareAllUser() {
+        return this.totalEarnByShareAllUser
+    }    
+
+    getTotalEarnByReference(user) {
+        return this.totalEarnByReference.get(user)
+    }
+
+    getTotalEarnByShare(user) {
+        return this.totalEarnByShare.get(user)
     }
     
     getShares() {
@@ -829,6 +872,7 @@ class CryptoHeroContract extends OwnerableContract {
             const cut = actualCost.dividedToIntegerBy(withoutCut)
             Blockchain.transfer(referer, cut)
             this.totalEarnByReference.set(referer, this.totalEarnByShare.get(referer) + cut)
+            this.totalEarnByReferenceAllUser = this.totalEarnByReferenceAllUser.plus(cut)            
             this.triggerReferralEvent(true, referer, from, cut)
         }
     }
@@ -859,7 +903,7 @@ class CryptoHeroContract extends OwnerableContract {
     }
 
     withdrawAll() {
-        this.withdraw(this.getBalance().div(3))
+        this.withdraw(this.getBalance())
     }       
 }
 

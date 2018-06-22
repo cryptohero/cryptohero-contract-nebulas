@@ -593,6 +593,7 @@ class CryptoHeroContract extends OwnerableContract {
         for (const holder of this.holders) {
             const share = unit.times(this.shareOfHolder.get(holder))
             Blockchain.transfer(holder, share)
+            this.totalEarnByShare.set(holder, this.totalEarnByShare.get(holder) + share)
             this.triggerShareEvent(true, holder, share)
         }        
     }
@@ -827,6 +828,7 @@ class CryptoHeroContract extends OwnerableContract {
             const withoutCut = new BigNumber(100).dividedToIntegerBy(referCut)
             const cut = actualCost.dividedToIntegerBy(withoutCut)
             Blockchain.transfer(referer, cut)
+            this.totalEarnByReference.set(referer, this.totalEarnByShare.get(referer) + cut)
             this.triggerReferralEvent(true, referer, from, cut)
         }
     }

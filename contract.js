@@ -686,8 +686,7 @@ class CryptoHeroContract extends OwnerableContract {
             }
         })
     }
-
-    /*
+    
     getSharePrice(user) {
         return this.getSharePriceOf.get(user)
     }
@@ -713,7 +712,6 @@ class CryptoHeroContract extends OwnerableContract {
         this.getShareOfHolder.set(seller, this.getShareOfHolder.get(seller) - 1)
         this.getShareOfHolder.set(from, this.getShareOfHolder.get(from) + 1)
     }    
-    */
 
     getDrawPrice() {
         return this.drawPrice

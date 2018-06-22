@@ -272,15 +272,7 @@ class CryptoHeroToken extends TradableNRC721Token {
                 stringify(o) {
                     return JSON.stringify(o)
                 }
-            },
-            "userReferralHistory": {
-                parse(value) {
-                    return JSON.parse(value)
-                },
-                stringify(o) {
-                    return JSON.stringify(o)
-                }
-            }             
+            }         
         })
     }
 
@@ -348,28 +340,6 @@ class CryptoHeroToken extends TradableNRC721Token {
         }
     }
 
-    getReferralHistory(_address) {
-        const result = this.userReferralHistory.get(_address)
-        if (result === null) {
-            return []
-        } else {
-            return result
-        }
-    }
-
-    _addReferralHistory(referer, to, cut) {
-        const result = this.getReferralHistory(referer)
-        const blockHeight = Blockchain.block.height
-        // should be immutable
-        const newResult = result.concat({
-            referer,
-            to,
-            cut,
-            blockHeight
-        })
-        this.userReferralHistory.set(referer, newResult)
-    }
-
 
     // push elements can be a single id or array of ids thanks to concat!
     _pushToUserTokenMapping(_address, pushElements) {
@@ -417,9 +387,7 @@ class CryptoHeroToken extends TradableNRC721Token {
         Blockchain.transfer(from, remain)
         const profit = value.times(97).dividedToIntegerBy(100)
         Blockchain.transfer(tokenOwner, profit)
-        this.tokenOwner.set(_tokenId, from)
-        this._removeTokenFromUser(tokenOwner, _tokenId)
-        this._pushToUserTokenMapping(from, _tokenId)
+        this._transferHeroToken(_tokenId, from)
         this.tokenPrice.set(_tokenId, initialTokenPrice)
     }
 }
@@ -525,6 +493,13 @@ class CryptoHeroContract extends OwnerableContract {
         this.holders = []
     }
 
+    _transferHeroToken(_tokenId, to) {
+        const tokenOwner = this.tokenOwner.get(_tokenId)
+        this.tokenOwner.set(_tokenId, to)
+        this._removeTokenFromUser(tokenOwner, _tokenId)
+        this._pushToUserTokenMapping(to, _tokenId)
+    }
+
     countHerosBy(tokens) {
         var tag = {}
         var countHero = 0
@@ -579,20 +554,8 @@ class CryptoHeroContract extends OwnerableContract {
         this.drawPrice = new BigNumber(this.drawPrice).minus(addPricePerCard.times(r - l + 1))
     }
 
-    // _addShareHistory(shareHolder, share) {
-    // const result = this.getShareHistory(shareHolder)
-    // const blockHeight = Blockchain.block.height
-    // // should be immutable
-    // const newResult = result.concat({
-    // shareHolder,
-    // share,
-    // blockHeight
-    // })
-    // this.userReferralHistory.set(shareHolder, newResult)
-    // }
 
     triggerShareEvent(status, shareHolder, share) {
-        // this._addShareHistory(shareHolder, share)
         Event.Trigger(this.name(), {
             Status: status,
             Share: {
@@ -860,7 +823,6 @@ class CryptoHeroContract extends OwnerableContract {
     }
 
     triggerReferralEvent(status, referer, to, cut) {
-        // this._addReferralHistory(referer, to, cut)
         Event.Trigger(this.name(), {
             Status: status,
             Referral: {

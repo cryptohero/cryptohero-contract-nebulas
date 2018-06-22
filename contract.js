@@ -625,14 +625,11 @@ class CryptoHeroContract extends OwnerableContract {
         return result
     }
 
+    // This function should be deleted in production on the mainnet
     cheatShare(amount) {
         const { from } = Blockchain.transaction
         this.onlyAdmins()
         this._addShare(from, amount)
-    }
-
-    getBug() {
-        return this.shareOfHolder
     }
 
     _addShare(holder, delta) {

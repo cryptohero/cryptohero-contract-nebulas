@@ -900,7 +900,7 @@ class CryptoHeroContract extends OwnerableContract {
             const withoutCut = new BigNumber(100).dividedToIntegerBy(referCut)
             const cut = actualCost.dividedToIntegerBy(withoutCut)
             Blockchain.transfer(referer, cut)
-            this.totalEarnByReference.set(referer, new BigNumber(this.totalEarnByShare.get(referer)).plus(cut))
+            this.totalEarnByReference.set(referer, new BigNumber(this.totalEarnByReference.get(referer)).plus(cut))
             this.totalEarnByReferenceAllUser = this.totalEarnByReferenceAllUser.plus(cut)            
             this.triggerReferralEvent(true, referer, from, cut)
         }

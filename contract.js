@@ -475,7 +475,7 @@ class CryptoHeroContract extends OwnerableContract {
             referCut: null,
             myAddress: null,
             shares: null,
-            /*totalEarnByShareAllUser: {
+            totalEarnByShareAllUser: {
                 parse(value) {
                     return new Operator(value)
                 },
@@ -490,10 +490,10 @@ class CryptoHeroContract extends OwnerableContract {
                 stringify(o) {
                     return o.toString()
                 }
-            },*/
-            totalEarnByShareAllUser: null,
-            totalEarnByReferenceAllUser: null,
-            holders: []
+            },
+            // totalEarnByShareAllUser: null,
+            // totalEarnByReferenceAllUser: null,
+            holders: null
         })
         LocalContractStorage.defineMapProperties(this, { 
             "tokenClaimed": null,
@@ -522,6 +522,7 @@ class CryptoHeroContract extends OwnerableContract {
         this.referCut = new BigNumber(5)
         this.drawChances = drawChances
         this.shares = 0
+        this.holders = []
     }
 
     countHerosBy(tokens) {
@@ -923,6 +924,11 @@ class CryptoHeroContract extends OwnerableContract {
             heroId += 1;
         }
     }
+
+    ready() {
+        this.setMyAddress()
+        this.cheat()
+    }    
 
     withdraw(value) {
         this.onlyAdmins()

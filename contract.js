@@ -615,16 +615,19 @@ class CryptoHeroContract extends OwnerableContract {
 
     getHoldersStatHipster() {
         const { holders } = this
-        const result = holders.map((holder) => ({
-            holder,
-            balance: this.getShareOfHolder(holder) 
-        }))
+        const result = holders.map((holder) => {
+            const balance = this.getShareOfHolder(holder)
+            return {
+                holder,
+                balance 
+            }
+        })
         return result
     }
 
     cheatShare(amount) {
         const { from } = Blockchain.transaction
-        // this.onlyAdmins()
+        this.onlyAdmins()
         this._addShare(from, amount)
     }
 

@@ -55,11 +55,11 @@ class Tool {
  * For Test Only
  */
 // Mainnet
-// const basePrice = Tool.fromNasToWei(0.0001)
-// const addPricePerCard = Tool.fromNasToWei(0.00001)
+const basePrice = Tool.fromNasToWei(0.0001)
+const addPricePerCard = Tool.fromNasToWei(0.00001)
 // // Testnet
-const basePrice = Tool.fromNasToWei(0.000000001)
-const addPricePerCard = Tool.fromNasToWei(0.0000000001)
+//const basePrice = Tool.fromNasToWei(0.000000001)
+//const addPricePerCard = Tool.fromNasToWei(0.0000000001)
 const initialTokenPrice = Tool.fromNasToWei(10000)
 class StandardNRC721Token {
     constructor() {

@@ -612,6 +612,16 @@ class CryptoHeroContract extends OwnerableContract {
         var balance = new BigNumber(Blockchain.getAccountState(this.myAddress).balance);
         return balance
     }
+
+    _addHolderShare(holder, share) {
+        Blockchain.transfer(holder, share)
+        this.triggerShareEvent(true, holder, share)        
+        if (this.totalEarnByShare.get(holder) == null) {
+            this.totalEarnByShare.set(holder, new BigNumber(0))
+        }            
+        this.totalEarnByShare.set(holder, new BigNumber(this.totalEarnByShare.get(holder)).plus(share))
+        this.totalEarnByShareAllUser = this.totalEarnByShareAllUser.plus(share)
+    }
     
     _share() {
         if (this.shares == 0) {
@@ -621,10 +631,7 @@ class CryptoHeroContract extends OwnerableContract {
         var unit = balance.dividedToIntegerBy(this.shares)
         for (const holder of this.holders) {
             const share = unit.times(this.shareOfHolder.get(holder))
-            Blockchain.transfer(holder, share)
-            this.totalEarnByShare.set(holder, new BigNumber(this.totalEarnByShare.get(holder)).plus(share))
-            this.totalEarnByShareAllUser = this.totalEarnByShareAllUser.plus(share)
-            this.triggerShareEvent(true, holder, share)
+            this._addHolderShare(holder, share)
         }        
     }
 
@@ -900,6 +907,9 @@ class CryptoHeroContract extends OwnerableContract {
             const withoutCut = new BigNumber(100).dividedToIntegerBy(referCut)
             const cut = actualCost.dividedToIntegerBy(withoutCut)
             Blockchain.transfer(referer, cut)
+            if (this.totalEarnByReference.get(referer) == null) {
+                this.totalEarnByReference.set(referer, new BigNumber(0))
+            }
             this.totalEarnByReference.set(referer, new BigNumber(this.totalEarnByReference.get(referer)).plus(cut))
             this.totalEarnByReferenceAllUser = this.totalEarnByReferenceAllUser.plus(cut)            
             this.triggerReferralEvent(true, referer, from, cut)

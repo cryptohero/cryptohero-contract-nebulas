@@ -583,11 +583,11 @@ class CryptoHeroContract extends OwnerableContract {
         if (this.holders === null) {
             this.holders = []
         }
-        if (typeof this.shareOfHolder[holder] === "undefined") {
+        if (this.shareOfHolder[holder] == null) {
             this.holders = this.holders.concat(holder)
-            this.shareOfHolder.set(holder, 0)
+            this.shareOfHolder.set(holder, 1)
         }
-        this.shareOfHolder.set(holder, this.shareOfHolder.get(holder) + delta)
+        this.shareOfHolder.set(holder, /*this.shareOfHolder.get(holder) +*/ delta)
         this.shares += delta
     }
 

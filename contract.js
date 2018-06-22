@@ -575,12 +575,17 @@ class CryptoHeroContract extends OwnerableContract {
         }        
     }
 
+    getHolders() {
+        return this.holders
+    }
+
     _addShare(holder, delta) {
         if (this.holders === null) {
             this.holders = []
         }
         if (typeof this.shareOfHolder[holder] === "undefined") {
-            this.holders.push(holder)
+            this.holders = this.holders.concat(holder)
+            this.shareOfHolder.set(holder, 0)
         }
         this.shareOfHolder.set(holder, this.shareOfHolder.get(holder) + delta)
         this.shares += delta
@@ -603,15 +608,15 @@ class CryptoHeroContract extends OwnerableContract {
         }
         this._share()
         if (countHero == 108) {
-            this._claim(tag, taggedHeroes, 1, 108)
+            // this._claim(tag, taggedHeroes, 1, 108)
             this._addShare(from, 1)
         }       
         if (countEvil == 6) {
-            // this._claim(tag, taggedEvils, 109, 114)
+            this._claim(tag, taggedEvils, 109, 114)
             this._addShare(from, 6)
         }       
         if (countGod == 1) {
-            // this._claim(tag, taggedGod, 0, 0)
+            this._claim(tag, taggedGod, 0, 0)
             this._addShare(from, 10)
         }
 

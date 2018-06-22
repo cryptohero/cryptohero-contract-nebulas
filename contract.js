@@ -254,6 +254,21 @@ class TradableNRC721Token extends StandardNRC721Token {
         this.onlyTokenOwner(_tokenId)
         this.tokenPrice.set(_tokenId, Tool.fromNasToWei(_value))
     }   
+
+    buyToken(_tokenId) {
+        const { value, from } = Blockchain.transaction
+        const price = new BigNumber(this.priceOf(_tokenId))
+        const tokenOwner = this.ownerOf(_tokenId)
+        if (value.lt(price)) {
+            throw new Error("Sorry, insufficient bid.")
+        }
+        const remain = value.minus(price)
+        Blockchain.transfer(from, remain)
+        const profit = value.times(97).dividedToIntegerBy(100)
+        Blockchain.transfer(tokenOwner, profit)
+        this._transferHeroToken(_tokenId, from)
+        this.tokenPrice.set(_tokenId, initialTokenPrice)
+    }    
 }
 
 class CryptoHeroToken extends TradableNRC721Token {
@@ -340,7 +355,6 @@ class CryptoHeroToken extends TradableNRC721Token {
         }
     }
 
-
     // push elements can be a single id or array of ids thanks to concat!
     _pushToUserTokenMapping(_address, pushElements) {
         const result = this.getUserTokens(_address)
@@ -362,6 +376,7 @@ class CryptoHeroToken extends TradableNRC721Token {
         }
     }
 
+    // This function has been cached.
     // _getTokenIDsByAddress(_address) {
     //     var result = []
     //     for (let id = 0; id < this._length; id += 1) {
@@ -374,21 +389,6 @@ class CryptoHeroToken extends TradableNRC721Token {
 
     getTotalSupply() {
         return this._length
-    }
-
-    buyToken(_tokenId) {
-        const { value, from } = Blockchain.transaction
-        const price = new BigNumber(this.priceOf(_tokenId))
-        const tokenOwner = this.ownerOf(_tokenId)
-        if (value.lt(price)) {
-            throw new Error("Sorry, insufficient bid.")
-        }
-        const remain = value.minus(price)
-        Blockchain.transfer(from, remain)
-        const profit = value.times(97).dividedToIntegerBy(100)
-        Blockchain.transfer(tokenOwner, profit)
-        this._transferHeroToken(_tokenId, from)
-        this.tokenPrice.set(_tokenId, initialTokenPrice)
     }
 }
 
@@ -856,7 +856,6 @@ class CryptoHeroContract extends OwnerableContract {
         })
     }
 
-
     // referer by default is empty
     draw(referer = "") {
         var {
@@ -872,7 +871,7 @@ class CryptoHeroContract extends OwnerableContract {
         if (count > 0) {
             const result = this._issueMultipleCard(from, count)
             this.triggerDrawEvent(true, from, result)
-            this._sendCommissionTo(referer, actualCost, from)
+            this._sendCommissionTo(referer, actualCost)
             return result
         } else {
             throw new Error("You don't have enough token, try again with more.")
@@ -889,7 +888,7 @@ class CryptoHeroContract extends OwnerableContract {
         }         
     }        
 
-    _sendCommissionTo(referer, actualCost, from) {
+    _sendCommissionTo(referer, actualCost) {
         const { referCut } = this
         if (referer !== "") {
             const withoutCut = new BigNumber(100).dividedToIntegerBy(referCut)

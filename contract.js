@@ -447,6 +447,10 @@ class OwnerableContract extends CryptoHeroToken {
         }
     }
 
+    getAdmins() {
+        return this.admins
+    }
+
     setAdmins(address) {
         this.onlyContractOwner()
         this.admins.set(address, "true")
@@ -576,12 +580,21 @@ class CryptoHeroContract extends OwnerableContract {
             }
         })
     }    
+
+    getMyAddress() {
+        return this.getMyAddress
+    }
+
+    getBalance() {
+        var balance = new BigNumber(Blockchain.getAccountState(this.myAddress).balance);
+        return balance
+    }
     
     _share() {
         if (this.shares == 0) {
             return;
         }
-        var balance = new BigNumber(Blockchain.getAccountState(this.myAddress).balance);
+        var balance = this.getBalance()
         var unit = balance.div(this.shares)
         for (const i in this.holders) {
             const holder = this.holders[i]
@@ -599,10 +612,6 @@ class CryptoHeroContract extends OwnerableContract {
         return this.shareOfHolder
     }
 
-    getBug2() {
-        return this.shareOfHolder2
-    }    
-
     _addShare(holder, delta) {
         if (this.holders == null) {
             this.holders = []
@@ -610,7 +619,6 @@ class CryptoHeroContract extends OwnerableContract {
         if (this.shareOfHolder.get(holder) == null) {
             this.holders = this.holders.concat(holder)
             this.shareOfHolder.set(holder, 1)
-            this.shareOfHolder2.set(holder, "1")
         }
         this.shareOfHolder.set(holder, this.shareOfHolder.get(holder) + delta)
         this.shares += delta
@@ -618,6 +626,8 @@ class CryptoHeroContract extends OwnerableContract {
 
     claim() {
         const { from } = Blockchain.transaction
+        this.shareOfHolder.set(from, "1")
+
         const {
             countHero,
             countEvil,
@@ -858,8 +868,7 @@ class CryptoHeroContract extends OwnerableContract {
     }
 
     withdrawAll() {
-        var value = Blockchain.getAccountState(Blockchain.transaction.to).balance
-        this.withdraw(value);
+        this.withdraw(this.getBalance())
     }       
 }
 

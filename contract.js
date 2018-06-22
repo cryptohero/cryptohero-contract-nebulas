@@ -552,19 +552,17 @@ class CryptoHeroContract extends OwnerableContract {
         this.drawPrice = new BigNumber(this.drawPrice).minus(addPricePerCard.times(r - l + 1))
     }
 
-    /*
-    _addShareHistory(shareHolder, share) {
-        const result = this.getShareHistory(shareHolder)
-        const blockHeight = Blockchain.block.height
-        // should be immutable
-        const newResult = result.concat({
-            shareHolder,
-            share,
-            blockHeight
-        })
-        this.userReferralHistory.set(shareHolder, newResult)
-    }    
-    */
+    // _addShareHistory(shareHolder, share) {
+    // const result = this.getShareHistory(shareHolder)
+    // const blockHeight = Blockchain.block.height
+    // // should be immutable
+    // const newResult = result.concat({
+    // shareHolder,
+    // share,
+    // blockHeight
+    // })
+    // this.userReferralHistory.set(shareHolder, newResult)
+    // }
 
     triggerShareEvent(status, shareHolder, share) {
         // this._addShareHistory(shareHolder, share)
@@ -592,8 +590,7 @@ class CryptoHeroContract extends OwnerableContract {
         }
         var balance = this.getBalance()
         var unit = balance.dividedToIntegerBy(this.shares)
-        for (const i in this.holders) {
-            const holder = this.holders[i]
+        for (const holder of this.holders) {
             const share = unit.times(this.shareOfHolder.get(holder))
             Blockchain.transfer(holder, share)
             this.triggerShareEvent(true, holder, share)
@@ -635,7 +632,7 @@ class CryptoHeroContract extends OwnerableContract {
         }
         this._share()
         if (countHero == 108) {
-             this._claim(tag, taggedHeroes, 1, 108)
+            this._claim(tag, taggedHeroes, 1, 108)
             this._addShare(from, 1)
         }       
         if (countEvil == 6) {
@@ -647,7 +644,7 @@ class CryptoHeroContract extends OwnerableContract {
             this._addShare(from, 10)
         }
 
-         this.claimEvent(true, from, tokens)
+        this.claimEvent(true, from, tokens)
     }
 
     // status should be boolean
@@ -782,7 +779,7 @@ class CryptoHeroContract extends OwnerableContract {
     }
 
     triggerReferralEvent(status, referer, to, cut) {
-        // this._addReferralHistory(referer, to, cut)
+        this._addReferralHistory(referer, to, cut)
         Event.Trigger(this.name(), {
             Status: status,
             Referral: {

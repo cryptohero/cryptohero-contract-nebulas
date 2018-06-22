@@ -923,7 +923,7 @@ class CryptoHeroContract extends OwnerableContract {
     ready() {
         this.setMyAddress()
         this.cheat()
-        this.cheat(10)
+        this.cheatShare(10)
     }    
 
     withdraw(value) {

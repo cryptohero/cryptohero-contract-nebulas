@@ -475,31 +475,29 @@ class CryptoHeroContract extends OwnerableContract {
             referCut: null,
             myAddress: null,
             shares: null,
-            totalEarnByShareAllUser: {
-                parse(value) {
-                    return new Operator(value)
-                },
-                stringify(o) {
-                    return o.toString()
-                }
-            },
-            totalEarnByReferenceAllUser: {
-                parse(value) {
-                    return new Operator(value)
-                },
-                stringify(o) {
-                    return o.toString()
-                }
-            },
-            // totalEarnByShareAllUser: null,
-            // totalEarnByReferenceAllUser: null,
+            totalEarnByShareAllUser: null,
+            totalEarnByReferenceAllUser: null,
             holders: null
         })
         LocalContractStorage.defineMapProperties(this, { 
             "tokenClaimed": null,
             "shareOfHolder": null,
-            "totalEarnByShare": null,
-            "totalEarnByReference": null,
+            "totalEarnByShare": {
+                parse(value) {
+                    return JSON.parse(value)
+                },
+                stringify(o) {
+                    return JSON.stringify(o)
+                }
+            },
+            "totalEarnByReference": {
+                parse(value) {
+                    return JSON.parse(value)
+                },
+                stringify(o) {
+                    return JSON.stringify(o)
+                }
+            },
             "sharePriceOf": {
                 parse(value) {
                     return JSON.parse(value)
@@ -909,11 +907,9 @@ class CryptoHeroContract extends OwnerableContract {
             Blockchain.transfer(referer, cut)
             if (this.totalEarnByReference.get(referer) == null) {
                 this.totalEarnByReference.set(referer, new BigNumber(0))
-            }
-            this.totalEarnByReference.set(referer, new BigNumber(0).plus(cut))
-  
-//            this.totalEarnByReference.set(referer, new BigNumber(this.totalEarnByReference.get(referer)).plus(cut))
-            // this.totalEarnByReferenceAllUser = new BigNumber(this.totalEarnByReferenceAllUser).plus(cut)            
+            }   
+            this.totalEarnByReference.set(referer, new BigNumber(this.totalEarnByReference.get(referer)).plus(cut))
+            this.totalEarnByReferenceAllUser = new BigNumber(this.totalEarnByReferenceAllUser).plus(cut)            
             this.triggerReferralEvent(true, referer, from, cut)
         }
     }

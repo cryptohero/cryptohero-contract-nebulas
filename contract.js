@@ -298,7 +298,7 @@ class CryptoHeroToken extends TradableNRC721Token {
             this._mint(_to, tokenId)
             this.totalQty = new BigNumber(this.totalQty).minus(1);
             this.tokenHeroId.set(tokenId, _heroId)
-            this.tokenPrice.set(tokenId, this.initialTokenPrice)
+            this.tokenPrice.set(tokenId, initialTokenPrice)
             this._length += 1;
             return tokenId
         }

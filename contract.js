@@ -54,8 +54,13 @@ class Tool {
 /**
  * For Test Only
  */
-const basePrice = Tool.fromNasToWei(0.00001)
-const addPricePerCard = Tool.fromNasToWei(0.000001)
+// Mainnet
+// const basePrice = Tool.fromNasToWei(0.0001)
+// const addPricePerCard = Tool.fromNasToWei(0.00001)
+// Testnet
+const basePrice = Tool.fromNasToWei(0.000000001)
+const addPricePerCard = Tool.fromNasToWei(0.0000000001)
+const initialTokenPrice = Tool.fromNasToWei(10000)
 class StandardNRC721Token {
     constructor() {
         // Contract Need to store on-chain data in LocalContractStorage
@@ -293,7 +298,7 @@ class CryptoHeroToken extends TradableNRC721Token {
             this._mint(_to, tokenId)
             this.totalQty = new BigNumber(this.totalQty).minus(1);
             this.tokenHeroId.set(tokenId, _heroId)
-            this.tokenPrice.set(tokenId, Tool.fromNasToWei(10000))
+            this.tokenPrice.set(tokenId, this.initialTokenPrice)
             this._length += 1;
             return tokenId
         }
@@ -415,7 +420,7 @@ class CryptoHeroToken extends TradableNRC721Token {
         this.tokenOwner.set(_tokenId, from)
         this._removeTokenFromUser(tokenOwner, _tokenId)
         this._pushToUserTokenMapping(from, _tokenId)
-        this.tokenPrice.set(_tokenId, Tool.fromNasToWei(100))
+        this.tokenPrice.set(_tokenId, initialTokenPrice)
     }
 }
 
@@ -474,7 +479,9 @@ class CryptoHeroContract extends OwnerableContract {
         })
         LocalContractStorage.defineMapProperties(this, { 
             "tokenClaimed": null,
-            "shareOfHolder": null                    
+            "shareOfHolder": null,
+            "totalEarnByShare": null,
+            "totalEarnByReference": null
         })
     }
 
@@ -602,9 +609,6 @@ class CryptoHeroContract extends OwnerableContract {
     }
 
     _addShare(holder, delta) {
-        if (this.holders == null) {
-            this.holders = []
-        }
         if (this.shareOfHolder.get(holder) == null) {
             this.holders = this.holders.concat(holder)
             this.shareOfHolder.set(holder, 0)
@@ -631,7 +635,7 @@ class CryptoHeroContract extends OwnerableContract {
         }
         this._share()
         if (countHero == 108) {
-            // this._claim(tag, taggedHeroes, 1, 108)
+             this._claim(tag, taggedHeroes, 1, 108)
             this._addShare(from, 1)
         }       
         if (countEvil == 6) {
@@ -643,7 +647,7 @@ class CryptoHeroContract extends OwnerableContract {
             this._addShare(from, 10)
         }
 
-        // this.claimEvent(true, from, tokens)
+         this.claimEvent(true, from, tokens)
     }
 
     // status should be boolean
@@ -778,7 +782,7 @@ class CryptoHeroContract extends OwnerableContract {
     }
 
     triggerReferralEvent(status, referer, to, cut) {
-        this._addReferralHistory(referer, to, cut)
+        // this._addReferralHistory(referer, to, cut)
         Event.Trigger(this.name(), {
             Status: status,
             Referral: {

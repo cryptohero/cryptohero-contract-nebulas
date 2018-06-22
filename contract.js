@@ -530,7 +530,7 @@ class CryptoHeroContract extends OwnerableContract {
             const heroId = this.tokenHeroId.get(tokenId)
             if (tag[heroId] == true) {
                 if (heroId >= l && heroId <= r) {
-                    this.tokenClaimed.set(tokenId, "true")
+                    this.tokenClaimed.set(tokenId, true)
                 }                
             } 
         }
@@ -570,7 +570,7 @@ class CryptoHeroContract extends OwnerableContract {
         var unit = balance.div(this.shares)
         for (const i in this.holders) {
             const holder = this.holders[i]
-            const share = new BigNumber(1).times(unit)
+            const share = unit.times(this.shareOfHolder.get(holder))
             Blockchain.transfer(holder, share)
             this.triggerShareEvent(true, holder, share)
         }        
@@ -590,10 +590,9 @@ class CryptoHeroContract extends OwnerableContract {
         }
         if (this.shareOfHolder.get(holder) == null) {
             this.holders = this.holders.concat(holder)
-            this.shareOfHolder.set(holder, "111")
+            this.shareOfHolder.set(holder, 0)
         }
-        this.shareOfHolder.set(holder, "111")
-        // this.shareOfHolder.set(holder, new BigNumber(this.shareOfHolder.get(holder)).plus(delta))
+        this.shareOfHolder.set(holder, this.shareOfHolder.get(holder) + delta)
         this.shares += delta
     }
 

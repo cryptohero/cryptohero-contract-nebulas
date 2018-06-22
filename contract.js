@@ -670,9 +670,19 @@ class CryptoHeroContract extends OwnerableContract {
         })
     }
 
+    getSharePrice(user) {
+        return this.getSharePriceOf.get(user)
+    }
+
+    // _value: unit should be nas
+    setSharePrice(_tokenId, _value) {
+        var { from } = Blockchain.transaction
+        this.sharePriceOf.set(from, Tool.fromNasToWei(_value))
+    }           
+
     buyShare(seller) {
-        const { value, buyer } = Blockchain.transaction
-        const price = new BigNumber(this.sharePriceOf(seller))
+        const { value, from } = Blockchain.transaction
+        const price = this.getSharePrice(seller)
         if (value.lt(price)) {
             throw new Error("Sorry, insufficient bid.")
         }
@@ -680,10 +690,10 @@ class CryptoHeroContract extends OwnerableContract {
             throw new Error("Sorry, insufficient share.")
         }
         var remain = new BigNumber(value).minus(price)
-        Blockchain.transfer(buyer, remain)
+        Blockchain.transfer(from, remain)
         Blockchain.transfer(seller, price)
         this.getShareOfHolder.set(seller, this.getShareOfHolder.get(seller) - 1)
-        this.getShareOfHolder.set(buyer, this.getShareOfHolder.get(buyer) + 1)
+        this.getShareOfHolder.set(from, this.getShareOfHolder.get(buyer) + 1)
     }    
 
     getDrawPrice() {
@@ -863,7 +873,7 @@ class CryptoHeroContract extends OwnerableContract {
                 this.tokenHeroId.set(token, to)
             }        
         }         
-    }    
+    }        
 
     _sendCommissionTo(referer, actualCost, from) {
         const { referCut } = this

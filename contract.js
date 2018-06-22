@@ -541,7 +541,6 @@ class CryptoHeroContract extends OwnerableContract {
         return this.countHerosBy(tokens)
     }
 
-
     _claim(tag, tokens, l, r) {        
         for (const tokenId of tokens) {
             const heroId = this.tokenHeroId.get(tokenId)
@@ -553,7 +552,6 @@ class CryptoHeroContract extends OwnerableContract {
         }
         this.drawPrice = new BigNumber(this.drawPrice).minus(addPricePerCard.times(r - l + 1))
     }
-
 
     triggerShareEvent(status, shareHolder, share) {
         Event.Trigger(this.name(), {
@@ -625,25 +623,6 @@ class CryptoHeroContract extends OwnerableContract {
         return result
     }
 
-    // This function should be deleted in production on the mainnet
-    cheatShare(amount) {
-        this.onlyAdmins()
-        if (this.shares >= 100) {
-            throw new Error("Sorry, you can not cheat any more.")
-        }
-        const { from } = Blockchain.transaction
-        this._addShare(from, parseInt(amount))
-    }
-
-    _addShare(holder, delta) {
-        if (this.shareOfHolder.get(holder) == null) {
-            this.holders = this.holders.concat(holder)
-            this.shareOfHolder.set(holder, 0)
-        }
-        this.shareOfHolder.set(holder, this.shareOfHolder.get(holder) + delta)
-        this.shares += delta
-    }
-
     claim() {
         const { from } = Blockchain.transaction
 
@@ -659,9 +638,6 @@ class CryptoHeroContract extends OwnerableContract {
         } = this.countHerosByAddress(from)    
         if (countHero !== 108 && countEvil !== 6 && countGod !== 1) {
             throw new Error("Sorry, you don't have enough token to claim.")
-        }
-        if (this.sharePriceOf.get(from) == null) {
-            this.sharePriceOf.set(from, Tool.fromNasToWei(10000))
         }
         this._share()
         if (countHero == 108) {
@@ -699,21 +675,48 @@ class CryptoHeroContract extends OwnerableContract {
     setSharePrice(_value) {
         var { from } = Blockchain.transaction
         this.sharePriceOf.set(from, Tool.fromNasToWei(_value))
-    }           
+    }     
 
+    cheatShare(amount) {
+        this.onlyAdmins()
+        if (this.shares >= 100) {
+            throw new Error("Sorry, you can not cheat any more.")
+        }
+        const { from } = Blockchain.transaction
+        this._addShare(from, parseInt(amount))
+    }
+
+    _addShare(holder, delta) {
+        if (this.shareOfHolder.get(holder) == null) {
+            this.holders = this.holders.concat(holder)
+            this.sharePriceOf.set(holder, Tool.fromNasToWei(10000))            
+            this.shareOfHolder.set(holder, 0)
+        }
+        this.shareOfHolder.set(holder, this.shareOfHolder.get(holder) + delta)
+        this.shares += delta
+    }
+    
     buyShare(seller) {
         const { value, from } = Blockchain.transaction
         const price = this.getSharePrice(seller)
+ 
+        if (this.getShareOfHolder(seller) == null || this.getShareOfHolder(seller) <= 0) {
+            throw new Error("Sorry, insufficient share.")
+        }        
         if (value.lt(price)) {
             throw new Error("Sorry, insufficient bid.")
         }
-        if (this.getShareOfHolder(seller) == null || this.getShareOfHolder(seller) <= 0) {
-            throw new Error("Sorry, insufficient share.")
-        }
+
         var remain = new BigNumber(value).minus(price)
         Blockchain.transfer(from, remain)
         Blockchain.transfer(seller, price)
         this.shareOfHolder.set(seller, this.getShareOfHolder(seller) - 1)
+
+        if (this.shareOfHolder.get(from) == null) {
+            this.holders = this.holders.concat(from)
+            this.sharePriceOf.set(from, Tool.fromNasToWei(10000))            
+            this.shareOfHolder.set(from, 0)
+        }        
         this.shareOfHolder.set(from, this.getShareOfHolder(from) + 1)
     }    
 

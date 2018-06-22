@@ -470,22 +470,7 @@ class CryptoHeroContract extends OwnerableContract {
         })
         LocalContractStorage.defineMapProperties(this, { 
             "tokenClaimed": null,
-            "shareOfHolder": {
-                parse(value) {
-                    return JSON.parse(value)
-                },
-                stringify(o) {
-                    return JSON.stringify(o)
-                }
-            }       ,
-            "shareOfHolder2": {
-                parse(value) {
-                    return JSON.parse(value)
-                },
-                stringify(o) {
-                    return JSON.stringify(o)
-                }
-            }                     
+            "shareOfHolder": null                    
         })
     }
 
@@ -618,7 +603,7 @@ class CryptoHeroContract extends OwnerableContract {
         }
         if (this.shareOfHolder.get(holder) == null) {
             this.holders = this.holders.concat(holder)
-            this.shareOfHolder.set(holder, 1)
+            this.shareOfHolder.set(holder, 0)
         }
         this.shareOfHolder.set(holder, this.shareOfHolder.get(holder) + delta)
         this.shares += delta
@@ -626,7 +611,6 @@ class CryptoHeroContract extends OwnerableContract {
 
     claim() {
         const { from } = Blockchain.transaction
-        this.shareOfHolder.set(from, "1")
 
         const {
             countHero,

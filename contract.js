@@ -588,7 +588,6 @@ class CryptoHeroContract extends OwnerableContract {
         for (const i in this.holders) {
             const holder = this.holders[i]
             const share = unit.times(this.shareOfHolder.get(holder))
-            this.owner = holder; // #
             Blockchain.transfer(holder, share)
             this.triggerShareEvent(true, holder, share)
         }        
@@ -857,7 +856,7 @@ class CryptoHeroContract extends OwnerableContract {
     }
 
     withdrawAll() {
-        this.withdraw(this.getBalance())
+        this.withdraw(this.getBalance().div(3))
     }       
 }
 

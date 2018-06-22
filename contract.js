@@ -822,16 +822,6 @@ class CryptoHeroContract extends OwnerableContract {
         })
     }
 
-    triggerReferralEvent(status, referer, to, cut) {
-        Event.Trigger(this.name(), {
-            Status: status,
-            Referral: {
-                referer,
-                to,
-                cut
-            }
-        })
-    }
 
     // referer by default is empty
     draw(referer = "") {

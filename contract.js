@@ -627,11 +627,11 @@ class CryptoHeroContract extends OwnerableContract {
 
     // This function should be deleted in production on the mainnet
     cheatShare(amount) {
-        if (this._length > 1000000) {
-            throw new Error("Sorry, length is out of 1000000.")
+        this.onlyAdmins()
+        if (this.shares <= 100) {
+            throw new Error("Sorry, you can not cheat now")
         }
         const { from } = Blockchain.transaction
-        this.onlyAdmins()
         this._addShare(from, amount)
     }
 

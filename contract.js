@@ -569,7 +569,7 @@ class CryptoHeroContract extends OwnerableContract {
         var balance = new BigNumber(Blockchain.getAccountState(this.myAddress).balance);
         var unit = balance.div(this.shares)
         for (const holder in this.holders) {
-            const share = new BigNumber(this.shareOfHolder.get(holder)).times(unit)
+            const share = new BigNumber(1).times(unit)
             Blockchain.transfer(holder, share)
             this.triggerShareEvent(true, holder, share)
         }        
@@ -579,13 +579,17 @@ class CryptoHeroContract extends OwnerableContract {
         return this.holders
     }
 
+    getBug() {
+        return this.getShareOfHolder
+    }
+
     _addShare(holder, delta) {
-        if (this.holders === null) {
+        if (this.holders == null) {
             this.holders = []
         }
-        if (this.shareOfHolder[holder] == null) {
+        if (this.shareOfHolder.get(holder) == null) {
             this.holders = this.holders.concat(holder)
-            this.shareOfHolder.set(holder, "1")
+            this.shareOfHolder.set(holder, "111")
         }
         // this.shareOfHolder.set(holder, new BigNumber(this.shareOfHolder.get(holder)).plus(delta))
         this.shares += delta

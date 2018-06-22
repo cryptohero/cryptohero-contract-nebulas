@@ -620,7 +620,7 @@ class CryptoHeroContract extends OwnerableContract {
             this.totalEarnByShare.set(holder, new BigNumber(0))
         }            
         this.totalEarnByShare.set(holder, new BigNumber(this.totalEarnByShare.get(holder)).plus(share))
-        this.totalEarnByShareAllUser = this.totalEarnByShareAllUser.plus(share)
+        this.totalEarnByShareAllUser = new BigNumber(this.totalEarnByShareAllUser).plus(share)
     }
     
     _share() {
@@ -911,7 +911,7 @@ class CryptoHeroContract extends OwnerableContract {
                 this.totalEarnByReference.set(referer, new BigNumber(0))
             }
             this.totalEarnByReference.set(referer, new BigNumber(this.totalEarnByReference.get(referer)).plus(cut))
-            this.totalEarnByReferenceAllUser = this.totalEarnByReferenceAllUser.plus(cut)            
+            this.totalEarnByReferenceAllUser = new BigNumber(this.totalEarnByReferenceAllUser).plus(cut)            
             this.triggerReferralEvent(true, referer, from, cut)
         }
     }

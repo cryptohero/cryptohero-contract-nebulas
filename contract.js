@@ -702,7 +702,7 @@ class CryptoHeroContract extends OwnerableContract {
     }
 
     // _value: unit should be nas
-    setSharePrice(_tokenId, _value) {
+    setSharePrice(_value) {
         var { from } = Blockchain.transaction
         this.sharePriceOf.set(from, Tool.fromNasToWei(_value))
     }           
@@ -719,8 +719,8 @@ class CryptoHeroContract extends OwnerableContract {
         var remain = new BigNumber(value).minus(price)
         Blockchain.transfer(from, remain)
         Blockchain.transfer(seller, price)
-        this.getShareOfHolder.set(seller, this.getShareOfHolder.get(seller) - 1)
-        this.getShareOfHolder.set(from, this.getShareOfHolder.get(from) + 1)
+        this.shareOfHolder.set(seller, this.getShareOfHolder(seller) - 1)
+        this.shareOfHolder.set(from, this.getShareOfHolder(from) + 1)
     }    
 
     getDrawPrice() {

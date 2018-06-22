@@ -410,7 +410,7 @@ class CryptoHeroToken extends TradableNRC721Token {
         }
         const remain = value.minus(price)
         Blockchain.transfer(from, remain)
-        const profit = value.times(97).div(100)
+        const profit = value.times(97).dividedToIntegerBy(100)
         Blockchain.transfer(tokenOwner, profit)
         this.tokenOwner.set(_tokenId, from)
         this._removeTokenFromUser(tokenOwner, _tokenId)
@@ -580,7 +580,7 @@ class CryptoHeroContract extends OwnerableContract {
             return;
         }
         var balance = this.getBalance()
-        var unit = balance.div(this.shares)
+        var unit = balance.dividedToIntegerBy(this.shares)
         for (const i in this.holders) {
             const holder = this.holders[i]
             const share = unit.times(this.shareOfHolder.get(holder))

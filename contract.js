@@ -355,6 +355,18 @@ class CryptoHeroToken extends TradableNRC721Token {
         }
     }
 
+    getHerosIdByTokens(tokens) {
+        return tokens.map((token) => this.getHeroIdByTokenId(token))
+    }
+
+    getPricesOfTokens(tokens) {
+        return tokens.map((token) => this.priceOf(token))
+    }
+
+    getTokensClaimStat(tokens) {
+        return tokens.map((token) => this.isTokenClaimed(token))
+    }
+
     // push elements can be a single id or array of ids thanks to concat!
     _pushToUserTokenMapping(_address, pushElements) {
         const result = this.getUserTokens(_address)

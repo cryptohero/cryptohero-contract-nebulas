@@ -58,8 +58,8 @@ class Tool {
 const basePrice = Tool.fromNasToWei(0.0001)
 const addPricePerCard = Tool.fromNasToWei(0.00001)
 // // Testnet
-//const basePrice = Tool.fromNasToWei(0.000000001)
-//const addPricePerCard = Tool.fromNasToWei(0.0000000001)
+// const basePrice = Tool.fromNasToWei(0.000000001)
+// const addPricePerCard = Tool.fromNasToWei(0.0000000001)
 const initialTokenPrice = Tool.fromNasToWei(10000)
 class StandardNRC721Token {
     constructor() {
@@ -698,8 +698,7 @@ class CryptoHeroContract extends OwnerableContract {
     
     buyShare(seller) {
         const { value, from } = Blockchain.transaction
-        const price = this.getSharePrice(seller)
- 
+        const price = this.getSharePrice(seller) 
         if (this.getShareOfHolder(seller) == null || this.getShareOfHolder(seller) <= 0) {
             throw new Error("Sorry, insufficient share.")
         }        
@@ -847,11 +846,13 @@ class CryptoHeroContract extends OwnerableContract {
     }
 
     triggerDrawEvent(status, _from, tokens) {
+        const herosId = tokens.map((token) => this.getHeroIdByTokenId(token))
         Event.Trigger(this.name(), {
             Status: status,
             Draw: {
                 from: _from,
-                tokens
+                tokens,
+                herosId
             }
         })
     }

@@ -55,11 +55,11 @@ class Tool {
  * For Test Only
  */
 // Mainnet
-const basePrice = Tool.fromNasToWei(0.0001)
-const addPricePerCard = Tool.fromNasToWei(0.00001)
+// const basePrice = Tool.fromNasToWei(0.0001)
+// const addPricePerCard = Tool.fromNasToWei(0.00001)
 // // Testnet
-// const basePrice = Tool.fromNasToWei(0.000000001)
-// const addPricePerCard = Tool.fromNasToWei(0.0000000001)
+const basePrice = Tool.fromNasToWei(0.0000000000000001)
+const addPricePerCard = Tool.fromNasToWei(0.000000000000001)
 const initialTokenPrice = Tool.fromNasToWei(10000)
 class StandardNRC721Token {
     constructor() {
@@ -441,16 +441,7 @@ class CryptoHeroToken extends TradableNRC721Token {
             throw new Error("No Token was found for the given address")
         }
     }
-    // This function has been cached.
-    // _getTokenIDsByAddress(_address) {
-    //     var result = []
-    //     for (let id = 0; id < this._length; id += 1) {
-    //         if (this.ownerOf(id) === _address) {
-    //             result.push(id)
-    //         }
-    //     }
-    //     return result
-    // }
+
 
     getTotalSupply() {
         return this._length
@@ -917,14 +908,12 @@ class CryptoHeroContract extends OwnerableContract {
         }
     }
 
-    triggerDrawEvent(status, _from, tokens) {
-        const herosId = tokens.map((token) => this.getHeroIdByTokenId(token))
+    triggerDrawEvent(status, _from, cards) {
         Event.Trigger(this.name(), {
             Status: status,
             Draw: {
                 from: _from,
-                tokens,
-                herosId
+                cards
             }
         })
     }
@@ -940,10 +929,10 @@ class CryptoHeroContract extends OwnerableContract {
         } = this._getDrawCount(value)
         Blockchain.transfer(from, remain)
         if (count > 0) {
-            const result = this._issueMultipleCard(from, count)
-            this.triggerDrawEvent(true, from, result)
+            const cards = this._issueMultipleCard(from, count)
+            this.triggerDrawEvent(true, from, cards)
             this._sendCommissionTo(referer, actualCost)
-            return result
+            return cards
         } else {
             throw new Error("You don't have enough token, try again with more.")
         }

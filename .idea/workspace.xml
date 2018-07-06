@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="1317313f-95c3-41ec-80e2-926967094be1" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/newContract.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/newContract.js" afterPath="$PROJECT_DIR$/newContract.js" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -20,9 +20,56 @@
       <file leaf-file-name="newContract.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/newContract.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="477">
-              <caret line="374" column="0" lean-forward="true" selection-start-line="0" selection-start-column="0" selection-end-line="1006" selection-end-column="35" />
-              <folding />
+            <state relative-caret-position="327">
+              <caret line="60" column="53" lean-forward="false" selection-start-line="60" selection-start-column="53" selection-end-line="60" selection-end-column="53" />
+              <folding>
+                <element signature="n#Operator#0" expanded="false" />
+                <element signature="n#Tool#0" expanded="false" />
+                <element signature="n#StandardNRC721Token#0" expanded="false" />
+                <element signature="n#TradableNRC721Token#0" expanded="false" />
+                <element signature="n#CryptoHeroToken#0" expanded="false" />
+                <element signature="e#9093#9601#0" expanded="false" />
+                <element signature="n#!!block;n#init#0;n#CryptoHeroToken#0" expanded="false" />
+                <element signature="n#!!block;n#_issue#0;n#CryptoHeroToken#0" expanded="false" />
+                <element signature="n#!!block;n#isSoldOut#0;n#CryptoHeroToken#0" expanded="false" />
+                <element signature="n#!!block;n#isTokenClaimed#0;n#CryptoHeroToken#0" expanded="false" />
+                <element signature="n#!!block;n#getCardsLeft#0;n#CryptoHeroToken#0" expanded="false" />
+                <element signature="n#!!block;n#getCardsByAddress#0;n#CryptoHeroToken#0" expanded="false" />
+                <element signature="n#!!block;n#getHeroIdByTokenId#0;n#CryptoHeroToken#0" expanded="false" />
+                <element signature="n#!!block;n#getCardInfos#0;n#CryptoHeroToken#0" expanded="false" />
+                <element signature="n#!!block;n#getUserTokens#0;n#CryptoHeroToken#0" expanded="false" />
+                <element signature="n#!!block;n#getHerosIdByTokens#0;n#CryptoHeroToken#0" expanded="false" />
+                <element signature="n#!!block;n#_pushToUserTokenMapping#0;n#CryptoHeroToken#0" expanded="false" />
+                <element signature="n#!!block;n#_pushToUserTokenMappingOfCards#0;n#CryptoHeroToken#0" expanded="false" />
+                <element signature="n#!!block;n#_removeTokenFromUser#0;n#CryptoHeroToken#0" expanded="false" />
+                <element signature="n#!!block;n#_removeTokenFromUserOfCards#0;n#CryptoHeroToken#0" expanded="false" />
+                <element signature="n#!!block;n#getTotalSupply#0;n#CryptoHeroToken#0" expanded="false" />
+                <element signature="n#!!block;n#constructor#0;n#OwnerableContract#0" expanded="false" />
+                <element signature="n#!!block;n#init#0;n#OwnerableContract#0" expanded="false" />
+                <element signature="n#!!block;n#onlyAdmins#0;n#OwnerableContract#0" expanded="false" />
+                <element signature="n#!!block;n#getContractOwner#0;n#OwnerableContract#0" expanded="false" />
+                <element signature="n#!!block;n#getAdmins#0;n#OwnerableContract#0" expanded="false" />
+                <element signature="n#!!block;n#setAdmins#0;n#OwnerableContract#0" expanded="false" />
+                <element signature="n#!!block;n#constructor#0;n#CryptoHeroContract#0" expanded="false" />
+                <element signature="e#15555#15644#0" expanded="false" />
+                <element signature="n#!!block;n#_transferHeroToken#0;n#CryptoHeroContract#0" expanded="false" />
+                <element signature="n#!!block;n#_transferHeroTokenOfCards#0;n#CryptoHeroContract#0" expanded="false" />
+                <element signature="n#!!block;n#countHerosBy#0;n#CryptoHeroContract#0" expanded="false" />
+                <element signature="n#!!block;n#countHerosByAddress#0;n#CryptoHeroContract#0" expanded="false" />
+                <element signature="n#!!block;n#_claim#0;n#CryptoHeroContract#0" expanded="false" />
+                <element signature="n#!!block;n#triggerShareEvent#0;n#CryptoHeroContract#0" expanded="false" />
+                <element signature="n#!!block;n#getBalance#0;n#CryptoHeroContract#0" expanded="false" />
+                <element signature="n#!!block;n#_addHolderShare#0;n#CryptoHeroContract#0" expanded="false" />
+                <element signature="n#!!block;n#_share#0;n#CryptoHeroContract#0" expanded="false" />
+                <element signature="n#!!block;n#getHoldersStat#0;n#CryptoHeroContract#0" expanded="false" />
+                <element signature="n#!!block;n#getHoldersStatHipster#0;n#CryptoHeroContract#0" expanded="false" />
+                <element signature="n#!!block;n#claim#0;n#CryptoHeroContract#0" expanded="false" />
+                <element signature="n#!!block;n#claimEvent#0;n#CryptoHeroContract#0" expanded="false" />
+                <element signature="n#!!block;n#getSharePrice#0;n#CryptoHeroContract#0" expanded="false" />
+                <element signature="n#!!block;n#cheatShare#0;n#CryptoHeroContract#0" expanded="false" />
+                <element signature="n#!!block;n#_addShare#0;n#CryptoHeroContract#0" expanded="false" />
+                <element signature="n#!!block;n#buyShare#0;n#CryptoHeroContract#0" expanded="false" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -43,9 +90,13 @@
       <find>userToken</find>
       <find>getUserTokens</find>
       <find>priceOf</find>
-      <find>draw</find>
       <find>_dynamicDraw</find>
       <find>_issue</find>
+      <find>cheat</find>
+      <find>onlyContractOwner</find>
+      <find>basePrice</find>
+      <find>draw</find>
+      <find>triggerDrawEvent</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -200,15 +251,15 @@
       <workItem from="1529926919937" duration="1537000" />
       <workItem from="1530251296116" duration="1006000" />
       <workItem from="1530253845291" duration="35000" />
-      <workItem from="1530883788829" duration="1751000" />
+      <workItem from="1530883788829" duration="3544000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="27350000" />
+    <option name="totallyTimeSpent" value="29143000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-11" y="-11" width="1942" height="1042" extended-state="7" />
+    <frame x="-11" y="-11" width="1942" height="1042" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.1625" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
@@ -236,7 +287,9 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="XDebuggerManager">
-    <breakpoint-manager />
+    <breakpoint-manager>
+      <option name="time" value="4" />
+    </breakpoint-manager>
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
@@ -282,9 +335,56 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/newContract.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="477">
-          <caret line="374" column="0" lean-forward="true" selection-start-line="0" selection-start-column="0" selection-end-line="1006" selection-end-column="35" />
-          <folding />
+        <state relative-caret-position="327">
+          <caret line="60" column="53" lean-forward="false" selection-start-line="60" selection-start-column="53" selection-end-line="60" selection-end-column="53" />
+          <folding>
+            <element signature="n#Operator#0" expanded="false" />
+            <element signature="n#Tool#0" expanded="false" />
+            <element signature="n#StandardNRC721Token#0" expanded="false" />
+            <element signature="n#TradableNRC721Token#0" expanded="false" />
+            <element signature="n#CryptoHeroToken#0" expanded="false" />
+            <element signature="e#9093#9601#0" expanded="false" />
+            <element signature="n#!!block;n#init#0;n#CryptoHeroToken#0" expanded="false" />
+            <element signature="n#!!block;n#_issue#0;n#CryptoHeroToken#0" expanded="false" />
+            <element signature="n#!!block;n#isSoldOut#0;n#CryptoHeroToken#0" expanded="false" />
+            <element signature="n#!!block;n#isTokenClaimed#0;n#CryptoHeroToken#0" expanded="false" />
+            <element signature="n#!!block;n#getCardsLeft#0;n#CryptoHeroToken#0" expanded="false" />
+            <element signature="n#!!block;n#getCardsByAddress#0;n#CryptoHeroToken#0" expanded="false" />
+            <element signature="n#!!block;n#getHeroIdByTokenId#0;n#CryptoHeroToken#0" expanded="false" />
+            <element signature="n#!!block;n#getCardInfos#0;n#CryptoHeroToken#0" expanded="false" />
+            <element signature="n#!!block;n#getUserTokens#0;n#CryptoHeroToken#0" expanded="false" />
+            <element signature="n#!!block;n#getHerosIdByTokens#0;n#CryptoHeroToken#0" expanded="false" />
+            <element signature="n#!!block;n#_pushToUserTokenMapping#0;n#CryptoHeroToken#0" expanded="false" />
+            <element signature="n#!!block;n#_pushToUserTokenMappingOfCards#0;n#CryptoHeroToken#0" expanded="false" />
+            <element signature="n#!!block;n#_removeTokenFromUser#0;n#CryptoHeroToken#0" expanded="false" />
+            <element signature="n#!!block;n#_removeTokenFromUserOfCards#0;n#CryptoHeroToken#0" expanded="false" />
+            <element signature="n#!!block;n#getTotalSupply#0;n#CryptoHeroToken#0" expanded="false" />
+            <element signature="n#!!block;n#constructor#0;n#OwnerableContract#0" expanded="false" />
+            <element signature="n#!!block;n#init#0;n#OwnerableContract#0" expanded="false" />
+            <element signature="n#!!block;n#onlyAdmins#0;n#OwnerableContract#0" expanded="false" />
+            <element signature="n#!!block;n#getContractOwner#0;n#OwnerableContract#0" expanded="false" />
+            <element signature="n#!!block;n#getAdmins#0;n#OwnerableContract#0" expanded="false" />
+            <element signature="n#!!block;n#setAdmins#0;n#OwnerableContract#0" expanded="false" />
+            <element signature="n#!!block;n#constructor#0;n#CryptoHeroContract#0" expanded="false" />
+            <element signature="e#15555#15644#0" expanded="false" />
+            <element signature="n#!!block;n#_transferHeroToken#0;n#CryptoHeroContract#0" expanded="false" />
+            <element signature="n#!!block;n#_transferHeroTokenOfCards#0;n#CryptoHeroContract#0" expanded="false" />
+            <element signature="n#!!block;n#countHerosBy#0;n#CryptoHeroContract#0" expanded="false" />
+            <element signature="n#!!block;n#countHerosByAddress#0;n#CryptoHeroContract#0" expanded="false" />
+            <element signature="n#!!block;n#_claim#0;n#CryptoHeroContract#0" expanded="false" />
+            <element signature="n#!!block;n#triggerShareEvent#0;n#CryptoHeroContract#0" expanded="false" />
+            <element signature="n#!!block;n#getBalance#0;n#CryptoHeroContract#0" expanded="false" />
+            <element signature="n#!!block;n#_addHolderShare#0;n#CryptoHeroContract#0" expanded="false" />
+            <element signature="n#!!block;n#_share#0;n#CryptoHeroContract#0" expanded="false" />
+            <element signature="n#!!block;n#getHoldersStat#0;n#CryptoHeroContract#0" expanded="false" />
+            <element signature="n#!!block;n#getHoldersStatHipster#0;n#CryptoHeroContract#0" expanded="false" />
+            <element signature="n#!!block;n#claim#0;n#CryptoHeroContract#0" expanded="false" />
+            <element signature="n#!!block;n#claimEvent#0;n#CryptoHeroContract#0" expanded="false" />
+            <element signature="n#!!block;n#getSharePrice#0;n#CryptoHeroContract#0" expanded="false" />
+            <element signature="n#!!block;n#cheatShare#0;n#CryptoHeroContract#0" expanded="false" />
+            <element signature="n#!!block;n#_addShare#0;n#CryptoHeroContract#0" expanded="false" />
+            <element signature="n#!!block;n#buyShare#0;n#CryptoHeroContract#0" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>

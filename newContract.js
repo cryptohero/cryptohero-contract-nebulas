@@ -225,6 +225,7 @@ class NRC20Token extends OwnableContract {
     transferEvent(status, from, to, value) {
         Event.Trigger(this.name(), {
             Status: status,
+            Action: "Transfer",
             Transfer: {
                 from,
                 to,
@@ -768,6 +769,7 @@ class CryptoHeroContract extends CryptoHeroToken {
     triggerShareEvent(status, shareHolder, share) {
         Event.Trigger(this.name(), {
             Status: status,
+            Action: "Share",
             Share: {
                 shareHolder,
                 share
@@ -864,6 +866,7 @@ class CryptoHeroContract extends CryptoHeroToken {
     claimEvent(status, from, claimedTokens) {
         Event.Trigger(this.name(), {
             Status: status,
+            Action: "Claim",
             Claim: {
                 from,
                 claimedTokens
@@ -1054,6 +1057,7 @@ class CryptoHeroContract extends CryptoHeroToken {
     triggerDrawEvent(status, _from, cards) {
         Event.Trigger(this.name(), {
             Status: status,
+            Action: "Draw",
             Draw: {
                 from: _from,
                 cards

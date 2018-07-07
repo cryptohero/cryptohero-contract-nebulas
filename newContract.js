@@ -289,7 +289,7 @@ class SmartToken extends NRC20Token {
         this.balances.set(_from, balance.sub(amount))
     }
 
-    _getprice(_startamount, _endamount) {
+    _getPrice(_startamount, _endamount) {
         // y = ax; a = rate;
         // x1 = startamout; x2 = endamount;
         //
@@ -330,7 +330,7 @@ class SmartToken extends NRC20Token {
         var newoneprice = new BigNumber(this.oneprice).add(new BigNumber(this.rate).times(_amount))
         var startamount = new BigNumber(this.oneprice).div(this.rate)
         var endamount = newoneprice.div(this.rate)
-        var price = new BigNumber(this._getprice(startamount, endamount))
+        var price = new BigNumber(this._getPrice(startamount, endamount))
         if (value.lt(price)) {
             throw new Error("Sorry, no enough value.")
         }
@@ -347,7 +347,7 @@ class SmartToken extends NRC20Token {
         var startamount = new BigNumber(this.oneprice).div(this.rate)
         var endamount = newoneprice.div(this.rate)
         // get abs
-        var price = new BigNumber(this._getprice(endamount, startamount))
+        var price = new BigNumber(this._getPrice(endamount, startamount))
         if (balance.lt(amount)) {
             throw new Error("Sorry, no enough balance.")
         }

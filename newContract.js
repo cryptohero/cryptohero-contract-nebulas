@@ -701,6 +701,11 @@ class CryptoHeroContract extends CryptoHeroToken {
         this.holders = []
     }
 
+    changeChances(chances) {
+        this.onlyAdmins()
+        this.drawChances = chances
+    }
+
     _transferHeroToken(_tokenId, to) {
         const tokenOwner = this.tokenOwner.get(_tokenId)
         this.tokenOwner.set(_tokenId, to)

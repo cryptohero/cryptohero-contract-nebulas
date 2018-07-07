@@ -80,9 +80,12 @@ class Allowed {
     }
 }
 
-class OwnerableContract {
+class OwnableContract {
     constructor() {
-        LocalContractStorage.defineProperties(this, { owner: null })
+        LocalContractStorage.defineProperties(this, {
+            owner: null,
+            myAddress: null
+        })
         LocalContractStorage.defineMapProperties(this, { "admins": null })
     }
 
@@ -118,42 +121,49 @@ class OwnerableContract {
         this.onlyContractOwner()
         this.admins.set(address, "true")
     }
+
+    withdraw(value) {
+        this.onlyAdmins()
+        // Only the owner can have the withdraw fund, so be careful
+        return Blockchain.transfer(this.owner, new BigNumber(value))
+    }
+
+    withdrawAll() {
+        this.withdraw(this.getContractBalance())
+    }
+
+    setMyAddress() {
+        this.onlyContractOwner()
+        this.myAddress = Blockchain.transaction.to
+    }
+
+    getContractBalance() {
+        var balance = new BigNumber(Blockchain.getAccountState(this.myAddress).balance);
+        return balance
+    }
 }
 
-class NRC20Token extends OwnerableContract {
+const BigNumberStorageDescriptor = {
+    parse(value) {
+        return new BigNumber(value);
+    },
+    stringify(o) {
+        return o.toString(10);
+    }
+}
+class NRC20Token extends OwnableContract {
     constructor() {
         super()
         LocalContractStorage.defineProperties(this, {
             _name: null,
             _symbol: null,
             _decimals: null,
-            _totalSupply: {
-                parse(value) {
-                    return new BigNumber(value);
-                },
-                stringify(o) {
-                    return o.toString(10);
-                }
-            }
+            _totalSupply: BigNumberStorageDescriptor
         });
 
         LocalContractStorage.defineMapProperties(this, {
-            "balances": {
-                parse(value) {
-                    return new BigNumber(value);
-                },
-                stringify(o) {
-                    return o.toString(10);
-                }
-            },
-            "allowed": {
-                parse(value) {
-                    return new Allowed(value);
-                },
-                stringify(o) {
-                    return o.toString();
-                }
-            }
+            "balances": BigNumberStorageDescriptor,
+            "allowed": BigNumberStorageDescriptor
         });
     }
 
@@ -409,15 +419,6 @@ class NonStandardNRC721Token extends SmartToken {
         LocalContractStorage.defineMapProperties(this, {
             "tokenOwner": null,
             "ownedTokensCount": null,
-            "tokenApprovals": null,
-            "operatorApprovals": {
-                parse(value) {
-                    return new Operator(value)
-                },
-                stringify(o) {
-                    return o.toString()
-                }
-            },
         })
     }
 
@@ -698,7 +699,6 @@ class CryptoHeroContract extends CryptoHeroToken {
             drawChances: null,
             drawPrice: null,
             referCut: null,
-            myAddress: null,
             shares: null,
             totalEarnByShareAllUser: null,
             totalEarnByReferenceAllUser: null,
@@ -804,14 +804,6 @@ class CryptoHeroContract extends CryptoHeroToken {
         })
     }
 
-    getMyAddress() {
-        return this.myAddress
-    }
-
-    getBalance() {
-        var balance = new BigNumber(Blockchain.getAccountState(this.myAddress).balance);
-        return balance
-    }
 
     _addHolderShare(holder, share) {
         Blockchain.transfer(holder, share)
@@ -827,7 +819,7 @@ class CryptoHeroContract extends CryptoHeroToken {
         if (this.shares == 0) {
             return;
         }
-        var balance = this.getBalance()
+        var balance = this.getContractBalance()
         var unit = balance.dividedToIntegerBy(this.shares)
         for (const holder of this.holders) {
             const share = unit.times(this.shareOfHolder.get(holder))
@@ -1137,10 +1129,6 @@ class CryptoHeroContract extends CryptoHeroToken {
         }
     }
 
-    setMyAddress() {
-        this.onlyContractOwner()
-        this.myAddress = Blockchain.transaction.to
-    }
 
     cheat() {
         this.onlyContractOwner()
@@ -1162,15 +1150,7 @@ class CryptoHeroContract extends CryptoHeroToken {
         this.cheatShare(1)
     }
 
-    withdraw(value) {
-        this.onlyAdmins()
-        // Only the owner can have the withdraw fund, so be careful
-        return Blockchain.transfer(this.owner, new BigNumber(value))
-    }
 
-    withdrawAll() {
-        this.withdraw(this.getBalance())
-    }
 }
 
 module.exports = CryptoHeroContract

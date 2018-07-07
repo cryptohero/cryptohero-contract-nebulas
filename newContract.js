@@ -434,63 +434,6 @@ class NonStandardNRC721Token extends SmartToken {
         return this.tokenOwner.get(_tokenId)
     }
 
-    getApproved(_tokenId) {
-        return this.tokenApprovals.get(_tokenId)
-    }
-
-    setApprovalForAll(_to, _approved) {
-        var from = Blockchain.transaction.from
-        if (from == _to) {
-            throw new Error("invalid address in setApprovalForAll.")
-        }
-        var operator = this.operatorApprovals.get(from) || new Operator()
-        operator.set(_to, _approved)
-        this.operatorApprovals.set(from, operator)
-    }
-
-    isApprovedForAll(_owner, _operator) {
-        var operator = this.operatorApprovals.get(_owner)
-        if (operator != null) {
-            if (operator.get(_operator) === "true") {
-                return true
-            } else {
-                return false
-            }
-        }
-    }
-
-    isApprovedOrOwner(_spender, _tokenId) {
-        var owner = this.ownerOf(_tokenId)
-        return _spender == owner || this.getApproved(_tokenId) == _spender || this.isApprovedForAll(owner, _spender)
-    }
-
-    rejectIfNotApprovedOrOwner(_tokenId) {
-        var from = Blockchain.transaction.from
-        if (!this.isApprovedOrOwner(from, _tokenId)) {
-            throw new Error("permission denied in transferFrom.")
-        }
-    }
-
-    transferFrom(_from, _to, _tokenId) {
-        var from = Blockchain.transaction.from
-        if (this.isApprovedOrOwner(from, _tokenId)) {
-            this.clearApproval(_from, _tokenId)
-            this.removeTokenFrom(_from, _tokenId)
-            this._addTokenTo(_to, _tokenId)
-            this.transferEvent(true, _from, _to, _tokenId)
-        } else {
-            throw new Error("permission denied in transferFrom.")
-        }
-    }
-
-    clearApproval(_owner, _tokenId) {
-        var owner = this.ownerOf(_tokenId)
-        if (_owner != owner) {
-            throw new Error("permission denied in clearApproval.")
-        }
-        this.tokenApprovals.del(_tokenId)
-    }
-
     removeTokenFrom(_from, _tokenId) {
         if (_from != this.ownerOf(_tokenId)) {
             throw new Error("permission denied in removeTokenFrom.")
@@ -532,27 +475,6 @@ class NonStandardNRC721Token extends SmartToken {
         this.transferEvent(true, _owner, "", _tokenId)
     }
 
-    transferEvent(status, _from, _to, _tokenId) {
-        Event.Trigger(this.name(), {
-            Status: status,
-            Transfer: {
-                from: _from,
-                to: _to,
-                tokenId: _tokenId
-            }
-        })
-    }
-
-    approveEvent(status, _owner, _spender, _tokenId) {
-        Event.Trigger(this.name(), {
-            Status: status,
-            Approve: {
-                owner: _owner,
-                spender: _spender,
-                tokenId: _tokenId
-            }
-        })
-    }
 }
 
 class TradableNRC721Token extends NonStandardNRC721Token {

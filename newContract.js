@@ -294,22 +294,27 @@ class NRC20Token extends OwnableContract {
 class ShareToken extends NRC20Token {
     constructor() {
         super()
-        LocalContractStorage.defineProperties(this, { totalEarnByShareAllUser: BigNumberStorageDescriptor, });
-        LocalContractStorage.defineMapProperties(this, { "totalEarnByShare": objectMapDescriptor, });
+        LocalContractStorage.defineProperties(this, {
+            totalEarnByShareAllUser: BigNumberStorageDescriptor,
+            shareHolders: null
+        });
+        LocalContractStorage.defineMapProperties(this, { "totalEarnByShare": objectMapDescriptor });
     }
     init() {
         super.init()
         this.totalEarnByShareAllUser = new BigNumber(0)
+        this.shareHolders = []
     }
     _share() {
         if (this._totalSupply == 0) {
             return;
         }
         var balance = this.getContractBalance()
-        var unit = balance.dividedToIntegerBy(this._totalSupply)
-        for (const holder of this.holders) {
-            const share = unit.times(this.shareOfHolder.get(holder))
-            this._addHolderShare(holder, share)
+        var profitPerShare = balance.dividedToIntegerBy(this._totalSupply)
+        for (const holder of this.shareHolders) {
+            const shares = this.balanceOf(holder)
+            const totalProfit = profitPerShare.times(shares)
+            this._addHolderShare(holder, totalProfit)
         }
     }
 
@@ -342,6 +347,21 @@ class ShareToken extends NRC20Token {
         this.totalEarnByShareAllUser = this.totalEarnByShareAllUser.plus(share)
     }
 
+    getHoldersStat() {
+        const { shareHolders } = this
+        const result = shareHolders.map((holder) => {
+            const balance = this.getShareOfHolder(holder)
+            return {
+                holder,
+                balance
+            }
+        })
+        return result
+    }
+
+    getHolders() {
+        return this.shareHolders
+    }
 }
 
 // Nas Smart Token v0.01
@@ -727,13 +747,10 @@ class CryptoHeroContract extends CryptoHeroToken {
             referCut: null,
             shares: null,
             totalEarnByReferenceAllUser: null,
-            holders: null
         })
         LocalContractStorage.defineMapProperties(this, {
             "tokenClaimed": null,
             "shareOfHolder": null,
-
-
             "totalEarnByReference": objectMapDescriptor,
             "sharePriceOf": objectMapDescriptor
         })
@@ -751,7 +768,6 @@ class CryptoHeroContract extends CryptoHeroToken {
         this.totalEarnByReferenceAllUser = new BigNumber(0)
         this.totalEarnByShareAllUser = new BigNumber(0)
         this.drawChances = drawChances
-        this.holders = []
     }
 
     changeChances(chances) {
@@ -824,34 +840,6 @@ class CryptoHeroContract extends CryptoHeroToken {
         this.drawPrice = new BigNumber(this.drawPrice).minus(addPricePerCard.times(r - l + 1))
     }
 
-    getHolders() {
-        return this.holders
-    }
-
-    getHoldersStat() {
-        const { holders } = this
-        var result = []
-        for (const holder of holders) {
-            const balance = this.getShareOfHolder(holder)
-            result.push({
-                holder,
-                balance
-            })
-        }
-        return result
-    }
-
-    getHoldersStatHipster() {
-        const { holders } = this
-        const result = holders.map((holder) => {
-            const balance = this.getShareOfHolder(holder)
-            return {
-                holder,
-                balance
-            }
-        })
-        return result
-    }
 
     claim() {
         const { from } = Blockchain.transaction
@@ -898,15 +886,15 @@ class CryptoHeroContract extends CryptoHeroToken {
         })
     }
 
-    getSharePrice(user) {
-        return this.sharePriceOf.get(user)
-    }
+    // getSharePrice(user) {
+    //     return this.sharePriceOf.get(user)
+    // }
 
-    // _value: unit should be nas
-    setSharePrice(_value) {
-        var { from } = Blockchain.transaction
-        this.sharePriceOf.set(from, Tool.fromNasToWei(_value))
-    }
+    // // _value: unit should be nas
+    // setSharePrice(_value) {
+    //     var { from } = Blockchain.transaction
+    //     this.sharePriceOf.set(from, Tool.fromNasToWei(_value))
+    // }
 
     cheatShare(amount) {
         this.onlyAdmins()
@@ -917,38 +905,38 @@ class CryptoHeroContract extends CryptoHeroToken {
         this._addShare(from, parseInt(amount))
     }
 
-    _addShare(holder, delta) {
-        if (this.shareOfHolder.get(holder) == null) {
-            this.holders = this.holders.concat(holder)
-            this.sharePriceOf.set(holder, Tool.fromNasToWei(10000))
-            this.shareOfHolder.set(holder, 0)
-        }
-        this.shareOfHolder.set(holder, this.shareOfHolder.get(holder) + delta)
-        this._totalSupply += delta
-    }
+    // _addShare(holder, delta) {
+    //     if (this.shareOfHolder.get(holder) == null) {
+    //         this.shareHolders = this.shareHolders.concat(holder)
+    //         this.sharePriceOf.set(holder, Tool.fromNasToWei(10000))
+    //         this.shareOfHolder.set(holder, 0)
+    //     }
+    //     this.shareOfHolder.set(holder, this.shareOfHolder.get(holder) + delta)
+    //     this._totalSupply += delta
+    // }
 
-    buyShare(seller) {
-        const { value, from } = Blockchain.transaction
-        const price = this.getSharePrice(seller)
-        if (this.getShareOfHolder(seller) == null || this.getShareOfHolder(seller) <= 0) {
-            throw new Error("Sorry, insufficient share.")
-        }
-        if (value.lt(price)) {
-            throw new Error("Sorry, insufficient bid.")
-        }
+    // buyShare(seller) {
+    //     const { value, from } = Blockchain.transaction
+    //     const price = this.getSharePrice(seller)
+    //     if (this.getShareOfHolder(seller) == null || this.getShareOfHolder(seller) <= 0) {
+    //         throw new Error("Sorry, insufficient share.")
+    //     }
+    //     if (value.lt(price)) {
+    //         throw new Error("Sorry, insufficient bid.")
+    //     }
 
-        var remain = new BigNumber(value).minus(price)
-        Blockchain.transfer(from, remain)
-        Blockchain.transfer(seller, price)
-        this.shareOfHolder.set(seller, this.getShareOfHolder(seller) - 1)
+    //     var remain = new BigNumber(value).minus(price)
+    //     Blockchain.transfer(from, remain)
+    //     Blockchain.transfer(seller, price)
+    //     this.shareOfHolder.set(seller, this.getShareOfHolder(seller) - 1)
 
-        if (this.shareOfHolder.get(from) == null) {
-            this.holders = this.holders.concat(from)
-            this.sharePriceOf.set(from, Tool.fromNasToWei(10000))
-            this.shareOfHolder.set(from, 0)
-        }
-        this.shareOfHolder.set(from, this.getShareOfHolder(from) + 1)
-    }
+    //     if (this.shareOfHolder.get(from) == null) {
+    //         this.shareHolders = this.shareHolders.concat(from)
+    //         this.sharePriceOf.set(from, Tool.fromNasToWei(10000))
+    //         this.shareOfHolder.set(from, 0)
+    //     }
+    //     this.shareOfHolder.set(from, this.getShareOfHolder(from) + 1)
+    // }
 
     getDrawPrice() {
         return this.drawPrice

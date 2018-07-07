@@ -80,8 +80,49 @@ class Allowed {
     }
 }
 
-class NRC20Token {
+class OwnerableContract {
     constructor() {
+        LocalContractStorage.defineProperties(this, { owner: null })
+        LocalContractStorage.defineMapProperties(this, { "admins": null })
+    }
+
+    init() {
+        const { from } = Blockchain.transaction
+        this.admins.set(from, "true")
+        this.owner = from
+    }
+
+    onlyAdmins() {
+        const { from } = Blockchain.transaction
+        if (!this.admins.get(from)) {
+            throw new Error("Sorry, You don't have the permission as admins.")
+        }
+    }
+
+    onlyContractOwner() {
+        const { from } = Blockchain.transaction
+        if (this.owner !== from) {
+            throw new Error("Sorry, But you don't have the permission as owner.")
+        }
+    }
+
+    getContractOwner() {
+        return this.owner
+    }
+
+    getAdmins() {
+        return this.admins
+    }
+
+    setAdmins(address) {
+        this.onlyContractOwner()
+        this.admins.set(address, "true")
+    }
+}
+
+class NRC20Token extends OwnerableContract {
+    constructor() {
+        super()
         LocalContractStorage.defineProperties(this, {
             _name: null,
             _symbol: null,
@@ -117,6 +158,7 @@ class NRC20Token {
     }
 
     init(name, symbol, decimals, totalSupply) {
+        super.init()
         this._name = name;
         this._symbol = symbol;
         this._decimals = decimals || 0;
@@ -708,55 +750,21 @@ class CryptoHeroToken extends TradableNRC721Token {
         }
     }
 
-
     getTotalSupply() {
         return this._length
     }
 }
 
-class OwnerableContract extends CryptoHeroToken {
-    constructor() {
-        super()
-        LocalContractStorage.defineProperties(this, { owner: null })
-        LocalContractStorage.defineMapProperties(this, { "admins": null })
-    }
 
-    init() {
-        super.init()
-        const { from } = Blockchain.transaction
-        this.admins.set(from, "true")
-        this.owner = from
-    }
-
-    onlyAdmins() {
-        const { from } = Blockchain.transaction
-        if (!this.admins.get(from)) {
-            throw new Error("Sorry, You don't have the permission as admins.")
-        }
-    }
-
-    onlyContractOwner() {
-        const { from } = Blockchain.transaction
-        if (this.owner !== from) {
-            throw new Error("Sorry, But you don't have the permission as owner.")
-        }
-    }
-
-    getContractOwner() {
-        return this.owner
-    }
-
-    getAdmins() {
-        return this.admins
-    }
-
-    setAdmins(address) {
-        this.onlyContractOwner()
-        this.admins.set(address, "true")
+const objectMapDescriptor = {
+    parse(value) {
+        return JSON.parse(value)
+    },
+    stringify(o) {
+        return JSON.stringify(o)
     }
 }
-
-class CryptoHeroContract extends OwnerableContract {
+class CryptoHeroContract extends CryptoHeroToken {
     constructor() {
         super()
         LocalContractStorage.defineProperties(this, {
@@ -772,30 +780,9 @@ class CryptoHeroContract extends OwnerableContract {
         LocalContractStorage.defineMapProperties(this, {
             "tokenClaimed": null,
             "shareOfHolder": null,
-            "totalEarnByShare": {
-                parse(value) {
-                    return JSON.parse(value)
-                },
-                stringify(o) {
-                    return JSON.stringify(o)
-                }
-            },
-            "totalEarnByReference": {
-                parse(value) {
-                    return JSON.parse(value)
-                },
-                stringify(o) {
-                    return JSON.stringify(o)
-                }
-            },
-            "sharePriceOf": {
-                parse(value) {
-                    return JSON.parse(value)
-                },
-                stringify(o) {
-                    return JSON.stringify(o)
-                }
-            }
+            "totalEarnByShare": objectMapDescriptor,
+            "totalEarnByReference": objectMapDescriptor,
+            "sharePriceOf": objectMapDescriptor
         })
     }
 

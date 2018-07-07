@@ -232,17 +232,6 @@ class NRC20Token {
         this.approveEvent(true, from, spender, value);
     }
 
-    approveEvent(status, from, spender, value) {
-        Event.Trigger(this.name(), {
-            Status: status,
-            Approve: {
-                owner: from,
-                spender,
-                value
-            }
-        });
-    }
-
     allowance(owner, spender) {
         var owned = this.allowed.get(owner);
         if (owned instanceof Allowed) {
@@ -259,7 +248,6 @@ class NRC20Token {
 // // https://github.com/bancorprotocol/contracts/blob/master/solidity/contracts/token/SmartToken.sol
 
 class SmartToken extends NRC20Token {
-
     constructor() {
         super();
         LocalContractStorage.defineProperties(this, {
@@ -356,7 +344,7 @@ class SmartToken extends NRC20Token {
         this.oneprice = newoneprice
     }
 
-    getoneprice() {
+    getOnePrice() {
         return this.oneprice
     }
 
@@ -631,7 +619,7 @@ class CryptoHeroToken extends TradableNRC721Token {
         this.totalQty = new BigNumber(totalQty)
     }
 
-    _issue(_to, _heroId) {
+    _issueCard(_to, _heroId) {
         if (this.isSoldOut()) {
             throw new Error("Sorry, the card pool is empty now.")
         } else {
@@ -1166,7 +1154,7 @@ class CryptoHeroContract extends OwnerableContract {
             count
         } = this.getType(r)
         const randomHeroId = offset + Tool.getRandomInt(0, count)
-        var tokenId = this._issue(from, randomHeroId)
+        var tokenId = this._issueCard(from, randomHeroId)
         return tokenId
     }
 

@@ -219,7 +219,7 @@ class NRC20Token {
         }
 
         var balance = new BigNumber(this.balanceOf(from));
-        var value = new BigNumber(value);
+        value = new BigNumber(value);
         if (value.lt(0) || balance.lt(value)) {
             throw new Error("invalid value.");
         }

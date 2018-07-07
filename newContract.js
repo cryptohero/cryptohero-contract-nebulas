@@ -302,11 +302,11 @@ class ShareToken extends NRC20Token {
         this.totalEarnByShareAllUser = new BigNumber(0)
     }
     _share() {
-        if (this.shares == 0) {
+        if (this._totalSupply == 0) {
             return;
         }
         var balance = this.getContractBalance()
-        var unit = balance.dividedToIntegerBy(this.shares)
+        var unit = balance.dividedToIntegerBy(this._totalSupply)
         for (const holder of this.holders) {
             const share = unit.times(this.shareOfHolder.get(holder))
             this._addHolderShare(holder, share)
@@ -751,7 +751,6 @@ class CryptoHeroContract extends CryptoHeroToken {
         this.totalEarnByReferenceAllUser = new BigNumber(0)
         this.totalEarnByShareAllUser = new BigNumber(0)
         this.drawChances = drawChances
-        this.shares = 0
         this.holders = []
     }
 
@@ -911,7 +910,7 @@ class CryptoHeroContract extends CryptoHeroToken {
 
     cheatShare(amount) {
         this.onlyAdmins()
-        if (this.shares >= 100) {
+        if (this._totalSupply >= 100) {
             throw new Error("Sorry, you can not cheat any more.")
         }
         const { from } = Blockchain.transaction
@@ -925,7 +924,7 @@ class CryptoHeroContract extends CryptoHeroToken {
             this.shareOfHolder.set(holder, 0)
         }
         this.shareOfHolder.set(holder, this.shareOfHolder.get(holder) + delta)
-        this.shares += delta
+        this._totalSupply += delta
     }
 
     buyShare(seller) {
@@ -977,15 +976,6 @@ class CryptoHeroContract extends CryptoHeroToken {
 
     getTotalEarnByReference(user) {
         return this.totalEarnByReference.get(user)
-    }
-
-
-    getShares() {
-        return this.shares
-    }
-
-    getShareOfHolder(holder) {
-        return this.shareOfHolder.get(holder)
     }
 
     getReferPercentage() {

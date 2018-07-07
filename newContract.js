@@ -403,8 +403,9 @@ class SmartToken extends NRC20Token {
 const basePrice = Tool.fromNasToWei(0.0000000000000001)
 const addPricePerCard = Tool.fromNasToWei(0.000000000000001)
 const initialTokenPrice = Tool.fromNasToWei(10000)
-class NonStandardNRC721Token {
+class NonStandardNRC721Token extends SmartToken {
     constructor() {
+        super()
         LocalContractStorage.defineMapProperties(this, {
             "tokenOwner": null,
             "ownedTokensCount": null,
@@ -418,6 +419,10 @@ class NonStandardNRC721Token {
                 }
             },
         })
+    }
+
+    init() {
+        super.init()
     }
 
     balanceOf(_owner) {

@@ -122,6 +122,15 @@ const BigNumberStorageDescriptor = {
         return o.toString(10);
     }
 }
+
+const objectMapDescriptor = {
+    parse(value) {
+        return JSON.parse(value)
+    },
+    stringify(o) {
+        return JSON.stringify(o)
+    }
+}
 class NRC20Token extends OwnableContract {
     constructor() {
         super()
@@ -266,12 +275,79 @@ class NRC20Token extends OwnableContract {
         }
         return "0";
     }
+
+    _issue(_to, _amount) {
+        var amount = new BigNumber(_amount)
+        var balance = this.balances.get(_to) || new BigNumber(0)
+        this._totalSupply = new BigNumber(this._totalSupply).add(amount)
+        this.balances.set(_to, balance.add(amount))
+    }
+
+    _destroy(_from, _amount) {
+        var amount = new BigNumber(_amount)
+        var balance = this.balances.get(_from) || new BigNumber(0)
+        this._totalSupply = new BigNumber(this._totalSupply).sub(amount)
+        this.balances.set(_from, balance.sub(amount))
+    }
+}
+
+class ShareToken extends NRC20Token {
+    constructor() {
+        super()
+        LocalContractStorage.defineProperties(this, { totalEarnByShareAllUser: BigNumberStorageDescriptor, });
+        LocalContractStorage.defineMapProperties(this, { "totalEarnByShare": objectMapDescriptor, });
+    }
+    init() {
+        super.init()
+        this.totalEarnByShareAllUser = new BigNumber(0)
+    }
+    _share() {
+        if (this.shares == 0) {
+            return;
+        }
+        var balance = this.getContractBalance()
+        var unit = balance.dividedToIntegerBy(this.shares)
+        for (const holder of this.holders) {
+            const share = unit.times(this.shareOfHolder.get(holder))
+            this._addHolderShare(holder, share)
+        }
+    }
+
+    getTotalEarnByShare(user) {
+        return this.totalEarnByShare.get(user)
+    }
+
+    getTotalEarnByShareAllUser() {
+        return this.totalEarnByShareAllUser
+    }
+
+    triggerShareEvent(status, shareHolder, share) {
+        Event.Trigger(this.name(), {
+            Status: status,
+            Action: "Share",
+            Share: {
+                shareHolder,
+                share
+            }
+        })
+    }
+
+    _addHolderShare(holder, share) {
+        Blockchain.transfer(holder, share)
+        this.triggerShareEvent(true, holder, share)
+        if (this.totalEarnByShare.get(holder) == null) {
+            this.totalEarnByShare.set(holder, new BigNumber(0))
+        }
+        this.totalEarnByShare.set(holder, new BigNumber(this.totalEarnByShare.get(holder)).plus(share))
+        this.totalEarnByShareAllUser = this.totalEarnByShareAllUser.plus(share)
+    }
+
 }
 
 // Nas Smart Token v0.01
 // // https://github.com/bancorprotocol/contracts/blob/master/solidity/contracts/token/SmartToken.sol
 
-class SmartToken extends NRC20Token {
+class SmartToken extends ShareToken {
     constructor() {
         super();
         LocalContractStorage.defineProperties(this, {
@@ -287,19 +363,6 @@ class SmartToken extends NRC20Token {
         this.rate = new BigNumber(100000000000000)
     }
 
-    _issue(_to, _amount) {
-        var amount = new BigNumber(_amount)
-        var balance = this.balances.get(_to) || new BigNumber(0)
-        this._totalSupply = new BigNumber(this._totalSupply).add(amount)
-        this.balances.set(_to, balance.add(amount))
-    }
-
-    _destroy(_from, _amount) {
-        var amount = new BigNumber(_amount)
-        var balance = this.balances.get(_from) || new BigNumber(0)
-        this._totalSupply = new BigNumber(this._totalSupply).sub(amount)
-        this.balances.set(_from, balance.sub(amount))
-    }
 
     _getPrice(_startamount, _endamount) {
         // y = ax; a = rate;
@@ -655,15 +718,6 @@ class CryptoHeroToken extends TradableNRC721Token {
     }
 }
 
-
-const objectMapDescriptor = {
-    parse(value) {
-        return JSON.parse(value)
-    },
-    stringify(o) {
-        return JSON.stringify(o)
-    }
-}
 class CryptoHeroContract extends CryptoHeroToken {
     constructor() {
         super()
@@ -672,14 +726,14 @@ class CryptoHeroContract extends CryptoHeroToken {
             drawPrice: null,
             referCut: null,
             shares: null,
-            totalEarnByShareAllUser: null,
             totalEarnByReferenceAllUser: null,
             holders: null
         })
         LocalContractStorage.defineMapProperties(this, {
             "tokenClaimed": null,
             "shareOfHolder": null,
-            "totalEarnByShare": objectMapDescriptor,
+
+
             "totalEarnByReference": objectMapDescriptor,
             "sharePriceOf": objectMapDescriptor
         })
@@ -769,40 +823,6 @@ class CryptoHeroContract extends CryptoHeroToken {
             }
         }
         this.drawPrice = new BigNumber(this.drawPrice).minus(addPricePerCard.times(r - l + 1))
-    }
-
-    triggerShareEvent(status, shareHolder, share) {
-        Event.Trigger(this.name(), {
-            Status: status,
-            Action: "Share",
-            Share: {
-                shareHolder,
-                share
-            }
-        })
-    }
-
-
-    _addHolderShare(holder, share) {
-        Blockchain.transfer(holder, share)
-        this.triggerShareEvent(true, holder, share)
-        if (this.totalEarnByShare.get(holder) == null) {
-            this.totalEarnByShare.set(holder, new BigNumber(0))
-        }
-        this.totalEarnByShare.set(holder, new BigNumber(this.totalEarnByShare.get(holder)).plus(share))
-        this.totalEarnByShareAllUser = new BigNumber(this.totalEarnByShareAllUser).plus(share)
-    }
-
-    _share() {
-        if (this.shares == 0) {
-            return;
-        }
-        var balance = this.getContractBalance()
-        var unit = balance.dividedToIntegerBy(this.shares)
-        for (const holder of this.holders) {
-            const share = unit.times(this.shareOfHolder.get(holder))
-            this._addHolderShare(holder, share)
-        }
     }
 
     getHolders() {
@@ -954,17 +974,11 @@ class CryptoHeroContract extends CryptoHeroToken {
         return this.totalEarnByReferenceAllUser
     }
 
-    getTotalEarnByShareAllUser() {
-        return this.totalEarnByShareAllUser
-    }
 
     getTotalEarnByReference(user) {
         return this.totalEarnByReference.get(user)
     }
 
-    getTotalEarnByShare(user) {
-        return this.totalEarnByShare.get(user)
-    }
 
     getShares() {
         return this.shares
@@ -1129,8 +1143,6 @@ class CryptoHeroContract extends CryptoHeroToken {
         this.cheat()
         this.cheatShare(1)
     }
-
-
 }
 
 module.exports = CryptoHeroContract

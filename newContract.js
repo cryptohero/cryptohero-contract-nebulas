@@ -361,7 +361,7 @@ class SmartToken extends NRC20Token {
 const basePrice = Tool.fromNasToWei(0.0000000000000001)
 const addPricePerCard = Tool.fromNasToWei(0.000000000000001)
 const initialTokenPrice = Tool.fromNasToWei(10000)
-class StandardNRC721Token {
+class NonStandardNRC721Token {
     constructor() {
         LocalContractStorage.defineMapProperties(this, {
             "tokenOwner": null,
@@ -385,22 +385,6 @@ class StandardNRC721Token {
 
     ownerOf(_tokenId) {
         return this.tokenOwner.get(_tokenId)
-    }
-
-    approve(_to, _tokenId) {
-        var from = Blockchain.transaction.from
-
-        var owner = this.ownerOf(_tokenId)
-        if (_to == owner) {
-            throw new Error("invalid address in approve.")
-        }
-        // msg.sender == owner || isApprovedForAll(owner, msg.sender)
-        if (owner == from || this.isApprovedForAll(owner, from)) {
-            this.tokenApprovals.set(_tokenId, _to)
-            this.approveEvent(true, owner, _to, _tokenId)
-        } else {
-            throw new Error("permission denied in approve.")
-        }
     }
 
     getApproved(_tokenId) {
@@ -524,7 +508,7 @@ class StandardNRC721Token {
     }
 }
 
-class TradableNRC721Token extends StandardNRC721Token {
+class TradableNRC721Token extends NonStandardNRC721Token {
     constructor() {
         super()
         LocalContractStorage.defineMapProperties(this, { "tokenPrice": null })

@@ -58,11 +58,11 @@ class Allowed {
         this.parse(obj);
     }
 
-    toString () {
+    toString() {
         return JSON.stringify(this.allowed);
     }
 
-    parse (obj) {
+    parse(obj) {
         if (typeof obj != "undefined") {
             var data = JSON.parse(obj);
             for (var key in data) {
@@ -71,11 +71,11 @@ class Allowed {
         }
     }
 
-    get (key) {
+    get(key) {
         return this.allowed[key];
     }
 
-    set (key, value) {
+    set(key, value) {
         this.allowed[key] = new BigNumber(value);
     }
 }
@@ -87,36 +87,36 @@ class NRC20Token {
             _symbol: null,
             _decimals: null,
             _totalSupply: {
-                parse (value) {
+                parse(value) {
                     return new BigNumber(value);
                 },
-                stringify (o) {
+                stringify(o) {
                     return o.toString(10);
                 }
             }
         });
-    
+
         LocalContractStorage.defineMapProperties(this, {
             "balances": {
-                parse (value) {
+                parse(value) {
                     return new BigNumber(value);
                 },
-                stringify (o) {
+                stringify(o) {
                     return o.toString(10);
                 }
             },
             "allowed": {
-                parse (value) {
+                parse(value) {
                     return new Allowed(value);
                 },
-                stringify (o) {
+                stringify(o) {
                     return o.toString();
                 }
             }
         });
     }
 
-    init (name, symbol, decimals, totalSupply) {
+    init(name, symbol, decimals, totalSupply) {
         this._name = name;
         this._symbol = symbol;
         this._decimals = decimals || 0;
@@ -128,25 +128,25 @@ class NRC20Token {
     }
 
     // Returns the name of the token
-    name () {
+    name() {
         return this._name;
     }
 
     // Returns the symbol of the token
-    symbol () {
+    symbol() {
         return this._symbol;
     }
 
     // Returns the number of decimals the token uses
-    decimals () {
+    decimals() {
         return this._decimals;
     }
 
-    totalSupply () {
+    totalSupply() {
         return this._totalSupply.toString(10);
     }
 
-    balanceOf (owner) {
+    balanceOf(owner) {
         var balance = this.balances.get(owner);
         if (balance instanceof BigNumber) {
             return balance.toString(10);
@@ -155,7 +155,7 @@ class NRC20Token {
         }
     }
 
-    transfer (to, value) {
+    transfer(to, value) {
         value = new BigNumber(value);
         if (value.lt(0)) {
             throw new Error("invalid value.");
@@ -174,7 +174,7 @@ class NRC20Token {
         this.transferEvent(true, from, to, value);
     }
 
-    transferFrom (from, to, value) {
+    transferFrom(from, to, value) {
         var spender = Blockchain.transaction.from;
         var balance = this.balances.get(from) || new BigNumber(0);
 
@@ -199,7 +199,7 @@ class NRC20Token {
         }
     }
 
-    transferEvent (status, from, to, value) {
+    transferEvent(status, from, to, value) {
         Event.Trigger(this.name(), {
             Status: status,
             Transfer: {
@@ -210,7 +210,7 @@ class NRC20Token {
         });
     }
 
-    approve (spender, currentValue, value) {
+    approve(spender, currentValue, value) {
         var from = Blockchain.transaction.from;
 
         var oldValue = this.allowance(from, spender);
@@ -232,7 +232,7 @@ class NRC20Token {
         this.approveEvent(true, from, spender, value);
     }
 
-    approveEvent (status, from, spender, value) {
+    approveEvent(status, from, spender, value) {
         Event.Trigger(this.name(), {
             Status: status,
             Approve: {
@@ -243,16 +243,123 @@ class NRC20Token {
         });
     }
 
-    allowance (owner, spender) {
+    allowance(owner, spender) {
         var owned = this.allowed.get(owner);
         if (owned instanceof Allowed) {
-            var spender = owned.get(spender);
+            spender = owned.get(spender);
             if (typeof spender != "undefined") {
                 return spender.toString(10);
             }
         }
         return "0";
     }
+}
+
+// Nas Smart Token v0.01
+// // https://github.com/bancorprotocol/contracts/blob/master/solidity/contracts/token/SmartToken.sol
+
+class SmartToken extends NRC20Token {
+
+    constructor() {
+        super();
+        LocalContractStorage.defineProperties(this, {
+            oneprice: null,
+            rate: null
+        })
+    }
+
+    init() {
+        super.init("SmartToken", "st", 0, 21000000)
+        this.oneprice = new BigNumber(100000000000000)
+        // 1 coin = 10 ^ 14 wei = 0.0001 nas
+        this.rate = new BigNumber(100000000000000)
+    }
+
+    _issue(_to, _amount) {
+        var amount = new BigNumber(_amount)
+        var balance = this.balances.get(_to) || new BigNumber(0)
+        this._totalSupply = new BigNumber(this._totalSupply).add(amount)
+        this.balances.set(_to, balance.add(amount))
+    }
+
+    _destroy(_from, _amount) {
+        var amount = new BigNumber(_amount)
+        var balance = this.balances.get(_from) || new BigNumber(0)
+        this._totalSupply = new BigNumber(this._totalSupply).sub(amount)
+        this.balances.set(_from, balance.sub(amount))
+    }
+
+    _getprice(_startamount, _endamount) {
+        // y = ax; a = rate;
+        // x1 = startamout; x2 = endamount;
+        //
+        // y ^    
+        //   |    
+        //   |     /|
+        //   |    / | 
+        //   |   /  |
+        //   |  |   |
+        //  -+----------->
+        //   |  x1  x2   x
+        //    
+        //  need to sub 1 end, and add 1 high, for true price
+        //  example : input (1, 4) (buy 3 coins)
+        //
+        //                1           
+        //    1           -            1
+        //   □           | \           - 
+        // 3 □□    =   3 |  \    ≠  2 | \
+        //   □□□         |   \        |  \
+        //    3            3           3
+        //
+        var startamount = new BigNumber(_startamount)
+        var endamount = new BigNumber(_endamount).sub(1)
+        var rate = new BigNumber(this.rate)
+        var price = endamount.add(startamount).times(endamount.sub(startamount).add(1).
+            times(rate)).
+            div(2)
+        return price
+    }
+
+    // https://github.com/bancorprotocol/contracts/blob/ff48eff4154331b802e1fb504e8b583a45265035/solidity/contracts/converter/BancorConverter.sol
+
+    buy(_amount) {
+        var from = Blockchain.transaction.from
+        var value = Blockchain.transaction.value
+        var amount = new BigNumber(_amount)
+        var newoneprice = new BigNumber(this.oneprice).add(new BigNumber(this.rate).times(_amount))
+        var startamount = new BigNumber(this.oneprice).div(this.rate)
+        var endamount = newoneprice.div(this.rate)
+        var price = new BigNumber(this._getprice(startamount, endamount))
+        if (value.lt(price)) {
+            throw new Error("Sorry, no enough value.")
+        }
+        Blockchain.transfer(from, value.sub(price))
+        this._issue(from, amount)
+        this.oneprice = newoneprice
+    }
+
+    sell(_amount) {
+        var from = Blockchain.transaction.from
+        var amount = new BigNumber(_amount)
+        var balance = this.balances.get(from) || new BigNumber(0)
+        var newoneprice = new BigNumber(this.oneprice).sub(new BigNumber(this.rate).times(_amount))
+        var startamount = new BigNumber(this.oneprice).div(this.rate)
+        var endamount = newoneprice.div(this.rate)
+        // get abs
+        var price = new BigNumber(this._getprice(endamount, startamount))
+        if (balance.lt(amount)) {
+            throw new Error("Sorry, no enough balance.")
+        }
+        Blockchain.transfer(from, price)
+        this._destroy(from, amount)
+        this.oneprice = newoneprice
+    }
+
+    getoneprice() {
+        return this.oneprice
+    }
+
 }
 
 

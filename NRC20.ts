@@ -1,5 +1,6 @@
 import { LocalContractStorage, Blockchain, StorageMap, Event } from "./System";
 import { BigNumber } from "./bignumber";
+import OwnableContract from "./OwnableContract";
 
 
 const BigNumberStorageDescriptor = {
@@ -55,7 +56,7 @@ class Allowed {
 
 type possibleNumber = BigNumber | string | number
 
-class NRC20Token {
+class NRC20Token extends OwnableContract {
     _name: string;
     _symbol: string;
     _decimals: number;
@@ -64,6 +65,7 @@ class NRC20Token {
     allowed: StorageMap<Allowed>;
 
     constructor() {
+        super()
         LocalContractStorage.defineProperties(this, {
             _name: null,
             _symbol: null,
@@ -84,7 +86,11 @@ class NRC20Token {
         });
     }
 
-    init(name: string, symbol: string, decimals: number, totalSupply: string | number) {
+    // Workaround for 
+    // Property 'init' in type 'The Child Class' is not assignable
+    // to the same property in base type 'The Father Class'
+    _initNRC20Token(name: string, symbol: string, decimals: number, totalSupply: string | number) {
+        super._initOwnableContract()
         this._name = name;
         this._symbol = symbol;
         this._decimals = decimals || 0;

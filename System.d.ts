@@ -71,6 +71,11 @@ export interface StorageMap<T> {
 }
 
 //blockchain结构,根据官方文档yy的
+
+interface DynamicParameter {
+    [fieldName: string]: any;
+}
+
 interface IBlockchain {
     // current block 
     block: {

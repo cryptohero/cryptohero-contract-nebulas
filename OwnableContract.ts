@@ -1,4 +1,4 @@
-import { LocalContractStorage, Blockchain, StorageMap, Event } from "./System";
+import { LocalContractStorage, Blockchain, StorageMap, DynamicParameter } from "./System";
 import { BigNumber } from "./bignumber";
 
 class OwnableContract {
@@ -13,7 +13,10 @@ class OwnableContract {
         LocalContractStorage.defineMapProperties(this, { "admins": null })
     }
 
-    init() {
+    // Workaround for 
+    // Property 'init' in type 'The Child Class' is not assignable
+    // to the same property in base type 'The Father Class'
+    _initOwnableContract() {
         const { from } = Blockchain.transaction
         this.admins.set(from, "true")
         this.owner = from

@@ -11,8 +11,8 @@ https://medium.com/@andoromeda
 
 目前星云水浒的架构将遵循：
 
-NRC20                          NRC721
-ShareableNRC20         TradableNRC721
-CryptoheroNRC20      CryptoheroNRC721
-OwnerableContract
-CryptoheroContract
+- NRC20                          NRC721
+- ShareableNRC20         TradableNRC721
+- CryptoheroNRC20      CryptoheroNRC721
+- OwnerableContract
+- CryptoheroContract
